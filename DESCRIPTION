@@ -1,16 +1,20 @@
 Package: snd
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Standardized Annotated Data
+Version: 0.0.1.0000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person(given = "Carolus", 
+           family = "Kwok", 
+           role = c("aut", "cre"),
+           email = "u3564223@connect.hku.hk", 
+           comment = c(ORCID = "0000-0002-8926-6096"))
+Description: Standardize data format describing multivarient data. The data can be easily edited with other pre-existing program (i.e. MS Office Excel, Google Spreadsheet, LibreOffice Calc), making it perfect for easy data analysis.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     dplyr,
+    magrittr,
     stringr,
-    tibble
+    tibble,
+    tools
