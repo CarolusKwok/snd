@@ -17,15 +17,6 @@ sys_abort_NoArg = function(x){
 
 #' @keywords internal
 #' @rdname sys_abort
-sys_abort_FileNotExist = function(x){
-  snd:::sys_abort(message = c("x" = "File missing in {.arg {arg}}",
-                                  "i" = "Please give file path in {.arg {arg}}"),
-                      arg = rlang::caller_arg(arg = x))
-}
-
-
-#' @keywords internal
-#' @rdname sys_abort
 sys_abort_WrongClass = function(x, class){
   class = stringr::str_flatten(string = class, collapse = ", ")
   custom_message = c("x" = "Wrong class in {.arg {arg}}",
@@ -34,3 +25,11 @@ sys_abort_WrongClass = function(x, class){
                       arg = rlang::caller_arg(arg = x))
 }
 
+#' @keywords internal
+#' @rdname sys_abort
+sys_abort_WrongLength = function(x, length){
+  if(rlang::is_missing(length)){snd:::sys_abort_NoArg(length)}
+  snd:::sys_abort(message = c("x" = "Wrong length in {.arg {arg}}",
+                              "i" = "Please use {.arg {arg}} with {length} item."),
+                  arg = rlang::caller_arg(arg = x), length = length)
+}

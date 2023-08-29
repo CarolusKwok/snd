@@ -11,10 +11,8 @@
 #'
 #' @examples checkFile_xlsx(xlsxFile)
 checkFile_xlsx = function(xlsxFile){
+  if(rlang::is_missing(xlsx)){snd:::sys_abort_NoArg(x = xlsxFile)}
   if(identical(xlsxFile, character(0))){snd:::sys_abort_NoArg(x = xlsxFile)}
-  if(!file.exists(xlsxFile)){snd:::sys_abort_FileNotExist(x = xlsxFile)}
-  if(tools::file_ext(xlsxFile) != "xlsx"){
-    snd:::sys_abort(message = c("x" = "{.arg xlsxFile} is not an {.file .xlsx} file",
-                                    "i" = "Please give an {.file .xlsx} file"))
-  }
+  if(!file.exists(xlsxFile)){snd:::sys_abort_fileNotExist(x = xlsxFile)}
+  if(tools::file_ext(xlsxFile) != "xlsx"){snd:::sys_abort_fileWrongType(x = xlsxFile, expected_format = ".xlsx")}
 }

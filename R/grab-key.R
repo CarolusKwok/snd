@@ -5,16 +5,16 @@
 #' Properties of a key is specified and separated using "_". These functions find the "head" and "tail" part of the key.
 #'
 #' The functions are as follow:
-#' sys_grab_KeyHead: Obtain the head of the key
-#' sys_grab_keyTail: Obtain the tail of the key
+#' grab_keyHead: Obtain the head of the key
+#' grab_keyTail: Obtain the tail of the key
 #'
 #' @param mtx mtx itself
 #' @param key the name of the key. Only accepts characters and only accept 1
 #'
 #' @return A string of characters
-#' @keywords internal
-#' @rdname sys_grab_key
-sys_grab_keyHead = function(mtx, key){
+#' @export
+#' @rdname grab_key
+grab_keyHead = function(mtx, key){
   mtx = dplyr::select(.data = mtx, key = {{key}}) %>%
     dplyr::mutate(pos = stringr::str_locate(string = key, pattern = "_")[,"start"],
                   pos = ifelse(is.na(pos), -1L, (pos-1)),
@@ -22,9 +22,9 @@ sys_grab_keyHead = function(mtx, key){
   return(mtx$head)
 }
 
-#' @keywords Internal
-#' @rdname sys_grab_key
-sys_grab_keyTail = function(mtx, key){
+#' @export
+#' @rdname grab_key
+grab_keyTail = function(mtx, key){
   mtx = dplyr::select(.data = mtx, key = {{key}}) %>%
     dplyr::mutate(pos = stringr::str_locate(string = key, pattern = "_")[,"start"],
                   consist_tail = !is.na(pos),

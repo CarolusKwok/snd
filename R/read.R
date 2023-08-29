@@ -1,11 +1,10 @@
 read_xlsx = function(xlsxFile, sheet){
   #Check ####
   if(!hasArg(xlsxFile)){snd:::sys_abort_NoArg(xlsxFile)}
-  snd:::checkFile_xlsx(xlsxFile = xlsxFile)
   ##Grab all available sheets ####
-  ava_factor = snd:::sys_grab_xlsfactor(xlsxFile = xlsxFile)
-  ava_item = snd:::sys_grab_xlsitem(xlsxFile = xlsxFile)
-  ava_data = snd:::sys_grab_xlsdata(xlsxFile = xlsxFile)
+  ava_factor = snd:::grab_xlsxFactor(xlsxFile = xlsxFile)
+  ava_item = snd:::grab_xlsxItem(xlsxFile = xlsxFile)
+  ava_data = snd:::grab_xlsxData(xlsxFile = xlsxFile)
   if(!hasArg(sheet)){sheet = ava_data}
   ##Continue ####
   snd:::checkRW_xlsx(xlsxFile = xlsxFile, sheet = sheet)

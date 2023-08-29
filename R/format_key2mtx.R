@@ -1,7 +1,7 @@
 #' System tools: Checking and Formatting other matrixs using keys during read-in.
 #'
 #' @description
-#' In SND, a `key` is a column within the matrix that can be used to check and modify itself, it's matrix and other matrices. This function uses a key within `formater`, to checks and modifies another matrix `formatee`, using a key. To modify it's own matrix, check the function `snd:::format_key`, which you are encouraged to use prior to formatting other matrices. To enhance security, only 1 key will be accepted.
+#' In SND, a `key` is a column within the matrix that can be used to check and modify itself, it's matrix and other matrices. This function uses a key within `formater`, to checks and modifies another matrix `formatee`, using a key. To modify it's own matrix, check the function `snd:::format_key`. To enhance security, only 1 key will be accepted.
 #'
 #' @param key The key in `character`. Only 1 key will be accepted.
 #' @param formater The matrix in `data.frame` to format the formatee. The matrix must contain the key.

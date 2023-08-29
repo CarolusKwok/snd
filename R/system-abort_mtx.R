@@ -1,12 +1,6 @@
 #' @title
 #' System tools: Standard abort message for matrices
 #'
-#' @description
-#' * sys_abort_mtxDuplicatedColumn: There are duplicated column names in the dataframe
-#' * sys_abort_mtxWrongClass: The input item is not a dataframe
-#' * sys_abort_mtxMissingKey: There are missing Keys in the dataframe
-#' * sys_abort_mtxColWrongClass: There are columns with wrong class in the matrix
-#'
 #' @param x The argument holding the matrix
 #' @param name Optional: name of the matrix
 #'

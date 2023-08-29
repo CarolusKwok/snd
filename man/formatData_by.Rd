@@ -3,19 +3,25 @@
 \name{formatData_byItem}
 \alias{formatData_byItem}
 \alias{formatData_byFactor}
-\title{Title}
+\title{System tools: Format data matrix by some other matrix}
 \usage{
 formatData_byItem(mtxData, mtxItem, mtxName)
 
 formatData_byFactor(mtxData, mtxFactor, mtxName)
 }
 \arguments{
-\item{mtxName}{}
+\item{mtxData}{The data matrix}
+
+\item{mtxItem}{The item matrix}
+
+\item{mtxName}{The name of the data matrix}
+
+\item{mtxFactor}{The factor matrix}
 }
 \value{
 A formatted Data matrix
 }
 \description{
-Title
+A work around based on \code{snd:::format_matrix} and \code{snd:::format_key2mtx}
 }
 \keyword{internal}
