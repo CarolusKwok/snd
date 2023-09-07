@@ -14,11 +14,27 @@
 #' @return A string of characters
 #' @export
 #' @rdname grab_key
-grab_keyHead = function(mtx, key){
+grab_keyPrefix = function(mtx, key){
+  alphabet = stringr::str_split_1(string = intToUtf8(c(65:90, 97:122)), pattern = "") %>%
+    stringr::str_flatten(collapse = "|")
   mtx = dplyr::select(.data = mtx, key = {{key}}) %>%
-    dplyr::mutate(pos = stringr::str_locate(string = key, pattern = "_")[,"start"],
-                  pos = ifelse(is.na(pos), -1L, (pos-1)),
-                  head= stringr::str_sub(string = key, start = 1L, end = pos))
+    dplyr::mutate(pos = stringr::str_locate(string = key, pattern = alphabet)[,"start"]-1,
+                  prefix = ifelse(pos == 0,
+                                  NA,
+                                  stringr::str_sub(string = key, start = 1L, end = pos)))
+  return(mtx$prefix)
+}
+
+#' @export
+#' @rdname grab_key
+grab_keyHead = function(mtx, key){
+  alphabet = stringr::str_split_1(string = intToUtf8(c(65:90, 97:122)), pattern = "") %>%
+    stringr::str_flatten(collapse = "|")
+  mtx = dplyr::select(.data = mtx, key = {{key}}) %>%
+    dplyr::mutate(pos_start = stringr::str_locate(string = key, pattern = alphabet)[,"start"],
+                  pos_end = stringr::str_locate(string = key, pattern = "_")[,"start"],
+                  pos_end = ifelse(is.na(pos_end), -1L, (pos_end-1)),
+                  head= stringr::str_sub(string = key, start = pos_start, end = pos_end))
   return(mtx$head)
 }
 

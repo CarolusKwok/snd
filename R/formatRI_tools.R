@@ -1,6 +1,6 @@
 #' @keywords internal
-#' @rdname format_matrix
-format_MakeKeyType = function(mtx, mtxName){
+#' @rdname formatRI_matrix
+formatRI_MakeKeyType = function(mtx, mtxName){
   ava_key = snd:::grab_mtxKey(mtx)
   key_typeTest = "@type" %in% ava_key
   if(!key_typeTest){
@@ -22,8 +22,8 @@ format_MakeKeyType = function(mtx, mtxName){
 }
 
 #' @keywords internal
-#' @rdname format_matrix
-format_shuffle = function(mtx, mtxName){
+#' @rdname formatRI_matrix
+formatRI_shuffle = function(mtx, mtxName){
   ava_Key = snd:::grab_mtxKey(dataframe = mtx)
   ava_Factor = snd:::grab_mtxFactor(dataframe = mtx)
   mtx = dplyr::relocate(.data = mtx, dplyr::all_of(ava_Key), dplyr::all_of(ava_Factor))

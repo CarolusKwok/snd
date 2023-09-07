@@ -15,7 +15,7 @@ checkRW_matrix = function(mtx, mtxName){
   #Checks ####
   if(!hasArg(mtx))(snd:::sys_abort_NoArg(mtx))
   if(!is.data.frame(mtx)){snd:::sys_abort_mtxWrongClass(x = mtx, mtxName)}
-  if(sum(duplicated(colnames(mtx)))){snd:::sys_abort_mtxDuplicatedColumn(x = mtx, name = mtxName)}
+  if(sum(duplicated(colnames(mtx)))){snd:::sys_abort_mtxColDuplicated(x = mtx, name = mtxName)}
 
   #Start ####
   UseMethod(generic = "checkRW_matrix", object = mtx)
@@ -35,13 +35,13 @@ checkRW_matrix.snd_data = function(mtx, mtxName){
 #' @export
 #' @rdname checkRW_matrix
 checkRW_matrix.snd_item = function(mtx, mtxName){
-  #Check if the dataframe contains @item	@datatype ####
+  #Check if the dataframe contains @item	@format ####
   ava_key = snd:::grab_mtxKey(mtx)
-  keyRequired = c("@item", "@datatype")
+  keyRequired = c("@item", "@format")
   keyTested = keyRequired %in% ava_key
   keyMissing = keyRequired[!keyTested]
   if(sum(!keyTested)){
-    snd:::sys_abort_mtxMissingKey(x = mtx,
+    snd:::sys_abort_mtxMissingSelectedKey(x = mtx,
                                       keys_missing = keyMissing,
                                       name = mtxName)
   }
@@ -50,13 +50,13 @@ checkRW_matrix.snd_item = function(mtx, mtxName){
 #' @export
 #' @rdname checkRW_matrix
 checkRW_matrix.snd_factor = function(mtx, mtxName){
-  #Check if the dataframe contains @factor @datatype @label ####
+  #Check if the dataframe contains @factor @format @label ####
   ava_key = snd:::grab_mtxKey(mtx)
-  keyRequired = c("@factor", "@datatype", "@label")
+  keyRequired = c("@factor", "@format", "@label")
   keyTested = keyRequired %in% ava_key
   keyMissing = keyRequired[!keyTested]
   if(sum(!keyTested)){
-    snd:::sys_abort_mtxMissingKey(x = mtx,
+    snd:::sys_abort_mtxMissingSelectedKey(x = mtx,
                                   keys_missing = keyMissing,
                                   name = mtxName)
   }

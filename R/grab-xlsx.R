@@ -35,14 +35,13 @@ grab_xlsxItem = function(xlsxFile){
   return(sheet_names)
 }
 
-#' @keywords internal
+#' @export
 #' @rdname grab_xls
 grab_xlsxData = function(xlsxFile){
   if(rlang::is_missing(xlsxFile)){snd:::sys_abort_NoArg(xlsxFile)}
   snd:::checkFile_xlsx(xlsxFile = xlsxFile)
-
   sheet_names = openxlsx::getSheetNames(file = xlsxFile)
   sheet_data = stringr::str_sub(sheet_names, start = 1L, end = 6L)
-  sheet_names = sheet_names[sheet_data == "#data" | sheet_data == "#data_"]
+  sheet_names = sheet_names[sheet_data == "#data_"]
   return(sheet_names)
 }
