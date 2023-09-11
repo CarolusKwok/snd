@@ -42,7 +42,9 @@ forge_xlsx = function(xlsxFile, sheet){
     lapply(FUN = classify, class = "snd_data")
 
   #Format it accordingly ####
-  for(i in 1:length(data_data)){data_data[[i]] = snd:::formatRI_matrix(mtx = data_data[[i]], mtxName = use_data[[i]])}
+  data_data = mapply(FUN = snd:::formatRI_matrix,
+                     mtx = data_data,
+                     mtxName = use_data)
 
   #Start forging items####
   data_item = lapply(X = data_data,
@@ -60,10 +62,11 @@ forge_xlsx = function(xlsxFile, sheet){
                                                                           what = "POSIXct"),
                                                        numeric = is_able(DATA = selected_data, CLASS = "numeric"),
                                                        character = TRUE)
-                                          return(names(table)[[match(x = TRUE, table = table)]])},
+                                          return(unlist(names(table)[[match(x = TRUE, table = table)]]))},
                                         data = X)
-                       return(as.data.frame(tibble::tibble(`@item` = items,
-                                                           `@format` = formats)))
+                       return(as.data.frame(tibble::tibble(`@item` = unlist(unname(items)),
+                                                           `@format` = unlist(unname(formats)),
+                                                           `@type` = "data")))
                      }) %>%
     lapply(FUN = classify, class = "snd_item")
   #Start forging factors####
@@ -99,36 +102,36 @@ forge_xlsx = function(xlsxFile, sheet){
   data_factor = dplyr::distinct(do.call("rbind", data_factor)) %>%
     classify(class = "snd_factor")
   #Normal formatting just like snd::read_xlsx ####
-  for(i in 1:length(data_data)){data_data[[i]] = snd:::formatRI_matrix(mtx = data_data[[i]], mtxName = use_data[[i]])}
-  for(i in 1:length(data_item)){data_item[[i]] = snd:::formatRI_matrix(mtx = data_item[[i]], mtxName = use_item[[i]])}
+  data_item = mapply(FUN = snd:::formatRI_matrix,
+                     mtx = data_item, mtxName = use_item, SIMPLIFY = FALSE)
   data_factor = snd:::formatRI_matrix(mtx = data_factor, mtxName = use_factor)
+
+  data_data = mapply(FUN = function(data_data, data_item, use_data){
+    use_key_item = snd::grab_mtxKey(data_item)
+    for(k in use_key_item){data_data = snd:::formatRI_key2mtx(key = k,
+                                                              formater = data_item,
+                                                              formatee = data_data,
+                                                              formateeName = use_data)}
+    return(invisible(data_data))},
+    data_data = data_data, data_item = data_item, use_data = use_data, SIMPLIFY = FALSE)
   use_key_factor = snd::grab_mtxKey(data_factor)
   for(i in 1:length(data_data)){
-    use_key_item = snd:::grab_mtxKey(data_item[[i]])
-    for(k in use_key_item){
-      data_data[[i]] = snd:::formatRI_key2mtx(key = k,
-                                            formater = data_item[[i]],
-                                            formatee = data_data[[i]],
-                                            formateeName = use_data[[i]])
-    }
     for(k in use_key_factor){
       data_data[[i]] = snd:::formatRI_key2mtx(key = k,
-                                            formater = data_factor,
-                                            formatee = data_data[[i]],
-                                            formateeName = use_data[[i]])
+                                              formater = data_factor,
+                                              formatee = data_data[[i]],
+                                              formateeName = use_data[[i]])
     }
   }
 
   #Package as SND ####
-  #Format as SND ####
-  snd = vector("list", length = (length(x = data_data) + 1))
-  snd[[1]] = data_factor
-  for(i in 1:length(data_data)){
-    snd_set = list(item = data_item[[i]],
-                   data = data_data[[i]])
+  snd_sets = mapply(FUN = function(data_item, data_data){
+    snd_set = list(item = data_item,
+                   data = data_data)
     class(snd_set) = "snd_set"
-    snd[[i+1]] = snd_set
-  }
+    return(snd_set)},
+    data_item = data_item, data_data = data_data, SIMPLIFY = FALSE)
+  snd = append(list(factor = data_factor), values = snd_sets)
   class(snd) = "snd"
   #Give them names ####
   names(snd) = c("factor", stringr::str_sub(use_data, start = 7, end = -1L))
