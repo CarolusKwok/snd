@@ -97,11 +97,18 @@ read_ISO8601 = function(time, tzone = ""){
                                             stringr::str_sub(time, 7L, 8L), tz = "UTC") -
                     as.POSIXct(x = "1970-01-01 00:00:00", tz = "UTC"),
                   auto = as.POSIXct(x = "0001-01-01 00:00:00", tz = "UTC") + offset_days + offset_time + offset_dot + offset_tz,
-                  auto_tzone = lubridate::with_tz(time = auto, tzone = tzone),
-                  auto_tzone = ifelse(pass, auto_tzone, NA))
+
+                  #Purge any autos that failed pass ####
+                  auto = ifelse(pass, auto, NA),
+
+                  #Refromat auto back as POSIXct
+                  auto = as.POSIXct(auto, origin = "1970-01-01 00:00:00"),
+                  auto_tz = lubridate::with_tz(time = auto, tzone = tzone)
+                  )
+
 
   #Return ####
-  return(process$auto_tzone)
+  return(process$auto_tz)
 }
 
 #' Title

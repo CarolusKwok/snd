@@ -120,8 +120,8 @@ formatRI_key2mtx_format_use.DTlogical = function(format, colItem, colName, mtxNa
 #' @rdname formatRI_key2mtx
 formatRI_key2mtx_format_use.DTPOSIXct = function(format, colItem, colName, mtxName){
   #Check ####
-  colItem_1 = unclass(ifelse(colItem == "#NA", NA, colItem))
-  colItem_2 = as.POSIXct(x = colItem_1, tryFormats = c("%Y%m%d-%H%M%OS", "%Y%m%d-%H%M"))
+  colItem_1 = ifelse(colItem == "#NA", NA, colItem)
+  colItem_2 = snd::read_ISO8601(time = colItem_1, tzone = "")
   colItem_test = ifelse(is.na(colItem_1), FALSE, #Do not flag if its designated as #NA
                         is.na(colItem_2)) #flag if its somehow NA
   if(sum(colItem_test)){
@@ -137,8 +137,8 @@ formatRI_key2mtx_format_use.DTPOSIXct = function(format, colItem, colName, mtxNa
   }
   #Return ####
   if(stringr::str_detect(string = format, pattern = "#")){
-    return(invisible(as.factor(unname(colItem_2))))
+    return(invisible(as.factor(colItem_2)))
   } else {
-    return(invisible(unname(colItem_2)))
+    return(invisible(colItem_2))
   }
 }
