@@ -1,12 +1,17 @@
-#' Title
+#' Binds 2 SNDs together
 #'
-#' @param snd1
-#' @param snd2
+#' @description
+#' For an SND to maintain it's structure, the data dataframe can not be simply combined! This function combines the datasets while still maintaining the SND structure. It also checks if the bind is reasonable.
 #'
-#' @return
+#' If there are datasets of the same name, it will be denoted with a suffix ".1" and ".2". There should not be datasets with the same name.
+#'
+#' @param snd1 The first SND
+#' @param snd2 The second SND
+#'
+#' @return A SND
 #' @export
 #'
-#' @examples
+#' @examples bind(snd1, snd2)
 bind = function(snd1, snd2){
   #Checks ####
   snd:::check_snd(snd1)

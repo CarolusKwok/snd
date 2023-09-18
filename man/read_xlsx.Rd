@@ -2,13 +2,36 @@
 % Please edit documentation in R/use_read_xlsx.R
 \name{read_xlsx}
 \alias{read_xlsx}
-\title{Title}
+\title{Read in an SND with xlsx}
 \usage{
 read_xlsx(xlsxFile, sheet = NULL)
 }
 \arguments{
-\item{sheet}{}
+\item{xlsxFile}{Directory of the .xlsx file}
+
+\item{sheet}{Name of sheets to be read it, in \code{character}. Note that only sheets containing data needs to be specified. By default (\code{NULL}), all available data will be read.}
+}
+\value{
+A SND object
 }
 \description{
-Title
+SND data can be created and formatted via external programs, e.g. Microsoft Excel, Google Sheets, and LibreOffice Calc. This function below reads in the SND data from a \code{.xlsx} file into the R environment. the datasets to read in can be specified using the \code{sheet} argument, and only the data matrix needs to be called. If a sheet name in \code{sheet} is unavailable, the function will abort.
+
+The matrix contained in xlsx are seperated by different xlsx sheets, and specified as part of the SND with \code{"#"}, followed by the type of matrix it contains. The currently supported spreadsheet names and matrix includes the following:
+\itemize{
+\item #factor
+\item #item
+\item #data
+}
+
+To specify the name of the matrix, a suffix \code{"_"} followed by it's name can be used. This function is only supported in #item and #data now, e.g.
+\itemize{
+\item #item_ecology, #data_ecology (the name of the matrix are "ecology")
+\item #data_environment (the name of the data matrix is "environment")
+}
+
+If an item matrix is not named, it will be set as the "general" matrix. This matrix will be used if no "specific" matrix is used for the data matrix. For more information, please read the Notion documents.
+}
+\examples{
+read_xlsx(xlsxFile, sheet = NULL)
 }

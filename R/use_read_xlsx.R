@@ -1,12 +1,25 @@
-#' Title
+#' Read in an SND with xlsx
 #'
-#' @param xlsxFile
-#' @param sheet
+#' @description
+#' SND data can be created and formatted via external programs, e.g. Microsoft Excel, Google Sheets, and LibreOffice Calc. This function below reads in the SND data from a `.xlsx` file into the R environment. the datasets to read in can be specified using the `sheet` argument, and only the data matrix needs to be called. If a sheet name in `sheet` is unavailable, the function will abort.
 #'
-#' @return
+#' The matrix contained in xlsx are seperated by different xlsx sheets, and specified as part of the SND with `"#"`, followed by the type of matrix it contains. The currently supported spreadsheet names and matrix includes the following:
+#' - #factor
+#' - #item
+#' - #data
+#'
+#' To specify the name of the matrix, a suffix `"_"` followed by it's name can be used. This function is only supported in #item and #data now, e.g.
+#' - #item_ecology, #data_ecology (the name of the matrix are "ecology")
+#' - #data_environment (the name of the data matrix is "environment")
+#'
+#' If an item matrix is not named, it will be set as the "general" matrix. This matrix will be used if no "specific" matrix is used for the data matrix. For more information, please read the Notion documents.
+#'
+#'
+#' @param xlsxFile Directory of the .xlsx file
+#' @param sheet Name of sheets to be read it, in `character`. Note that only sheets containing data needs to be specified. By default (`NULL`), all available data will be read.
+#' @return A SND object
 #' @export
-#'
-#' @examples
+#' @examples read_xlsx(xlsxFile, sheet = NULL)
 read_xlsx = function(xlsxFile, sheet = NULL){
   #Internal functions ####
   read_workbook = function(X, workbook){

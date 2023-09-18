@@ -1,12 +1,17 @@
-#' Title
+#' Forge in an SND with xlsx
 #'
-#' @param xlsxFile
-#' @param sheet
+#' @description
+#' **WARNING: In general, DO NOT use this function unless you have good reasons.**
 #'
-#' @return
+#' This function forges an SND, with only the data matrix, following the rules set by the Notion document and in `snd::read_xlsx`. As this function fills in all the necessary components in a SND, this is a good first step to start formatting your xlsx sheets into SND-compatible, along with `snd::write_xlsx`. The data matrix that needs to be SND compatible will need to use the prefix "#data_". If a sheet name in `sheet` is unavailable, the function will abort.
+#'
+#' @param xlsxFile Directory of the .xlsx file
+#' @param sheet Name of sheets to be read it, in `character`. Note that only sheets containing data needs to be specified. By default (`NULL`), all available data will be read.
+#'
+#' @return A SND object
 #' @export
 #'
-#' @examples
+#' @examples forge_xlsx(xlsxFile, sheet = NULL)
 forge_xlsx = function(xlsxFile, sheet){
   #Custom functions ####
   read_workbook = function(X, workbook){

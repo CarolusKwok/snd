@@ -2,13 +2,23 @@
 % Please edit documentation in R/use_bind.R
 \name{bind}
 \alias{bind}
-\title{Title}
+\title{Binds 2 SNDs together}
 \usage{
 bind(snd1, snd2)
 }
 \arguments{
-\item{snd2}{}
+\item{snd1}{The first SND}
+
+\item{snd2}{The second SND}
+}
+\value{
+A SND
 }
 \description{
-Title
+For an SND to maintain it's structure, the data dataframe can not be simply combined! This function combines the datasets while still maintaining the SND structure. It also checks if the bind is reasonable.
+
+If there are datasets of the same name, it will be denoted with a suffix ".1" and ".2". There should not be datasets with the same name.
+}
+\examples{
+bind(snd1, snd2)
 }
