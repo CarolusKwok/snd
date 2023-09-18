@@ -2,14 +2,39 @@
 % Please edit documentation in R/check_snd.R
 \name{check_snd}
 \alias{check_snd}
-\title{Title}
+\title{Check the structure of SND}
 \usage{
 check_snd(snd)
 }
 \arguments{
-\item{snd}{}
+\item{snd}{an SND}
+}
+\value{
+a standard abort message (if applicable)
 }
 \description{
-Title
+A SND has a standard, fixed structure, which includes the following.
+\itemize{
+\item factor
+\item dataset 1
+\item dataset 2
+\item dataset 3
+\item ...
+}
+}
+\details{
+which a dataset includes
+\itemize{
+\item item
+\item data
+}
+
+This function checks the structure of the SND and display a warning/ abort if...
+\itemize{
+\item There is no factor matrix (Part 1)
+\item There is no datasets (Part 2, warning only)
+\item There is no item (Part 3)
+\item There is no data (Part 4)
+}
 }
 \keyword{internal}

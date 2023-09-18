@@ -3,19 +3,66 @@
 \name{read_ISO8601}
 \alias{read_ISO8601}
 \alias{write_ISO8601}
-\title{Title}
+\title{Read In/ Write out Time}
 \usage{
 read_ISO8601(time, tzone = "")
 
 write_ISO8601(time)
 }
 \arguments{
-\item{time}{}
+\item{time}{\itemize{
+\item A vector of character, in ISO8601 (read_ISO8601)
+\item A vector of POSIXct (write_ISO8601)
+}}
 
-\item{tzone}{}
+\item{tzone}{A specified timezone in character. Only 1 is allowed. Use \code{Sys.timezone} to get the local timezone, or \code{OlsonNames} to get all accepted timezones.}
+}
+\value{
+\itemize{
+\item A vector of POSIXct (read_ISO8601)
+\item A vector of character in ISO8601 (write_ISO8601)
+}
 }
 \description{
-Title
+R can not read in time as a ISO8601 string and return as POSIXct. This function reads in ISO8601 strings in \code{time}, which will also format time in a specific timezone by \code{tzone}. By default (\code{""}), the specific timezone will be the local timezone. This function even supports incomplete date-time and negative years.
+The full format of ISO8601 contains a Date component, a Time component, and a Timezone component, separated by "T" to begin the Time component, i.e. Date\strong{T}TimeTimezone.
+The date component contains the following format:
+\itemize{
+\item YYYY-MM-DD
+\item YYYYMMDD
+\item YYYYMM
+\item YYYY
+}
 
-Title
+The time component (in 24 hour format) contains the following format:
+\itemize{
+\item HH:mm:ss.sss
+\item HHmmss.sss
+\item HH:mm.mmm
+\item HHmm.mmm
+\item HH.hhh
+\item .DDD
+}
+
+The timezone component contains the following format:
+\itemize{
+\item ±HH:mm
+\item ±HHmm
+\item Z (represents Zulu time or UTC time, +00:00)
+}
+
+For more information, please visit the wiki page over \href{https://en.wikipedia.org/wiki/ISO_8601}{here}.
+
+POSIXct does not allow missing date-time components. The missing components will be completed as followed.
+\itemize{
+\item Date: Find the median of the missing component, e.g. if only YYYY is filled, the the date will assume it's at 02nd, July of that year
+\item Time: Find the mean of the missing component or fill in by dot, e.g. if only HH is filled, it will assume the time to be half pass HH (i.e. HH:30:00.000); if only the dot is filled (e.g. T.500 or T12.5), it will assume the time to be the amount of the last called time component (i.e. .5 days or .5 hours, which will return 12:00:00.000 and 12:30:00.000 in the previous examples)
+\item Timezone: Find the local time zone.
+}
+
+If the string cannot be converted, \code{NA} will be returned
+}
+\examples{
+read_ISO8601(time = c("2020-01-01T12:00:00Z", "2020-01-01T12.6", "2020-01-01T250000"), tzone = "Hongkong")
+#which should read "2020-01-01 20:00:00 HKT" "2020-01-01 12:36:00 HKT" NA
 }

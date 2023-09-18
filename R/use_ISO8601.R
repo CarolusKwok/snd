@@ -1,14 +1,59 @@
-#' Title
+#' Read In/ Write out Time
+#'
+#' @description
+#' R can not read in time as a ISO8601 string and return as POSIXct. This function reads in ISO8601 strings in `time`, which will also format time in a specific timezone by `tzone`. By default (`""`), the specific timezone will be the local timezone. This function even supports incomplete date-time and negative years.
+#' The full format of ISO8601 contains a Date component, a Time component, and a Timezone component, separated by "T" to begin the Time component, i.e. Date**T**TimeTimezone.
+#' The date component contains the following format:
+#' - YYYY-MM-DD
+#' - YYYYMMDD
+#' - YYYYMM
+#' - YYYY
+#'
+#' The time component (in 24 hour format) contains the following format:
+#' - HH:mm:ss.sss
+#' - HHmmss.sss
+#' - HH:mm.mmm
+#' - HHmm.mmm
+#' - HH.hhh
+#' - .DDD
+#'
+#' The timezone component contains the following format:
+#' - ±HH:mm
+#' - ±HHmm
+#' - Z (represents Zulu time or UTC time, +00:00)
+#'
+#' For more information, please visit the wiki page over [here](https://en.wikipedia.org/wiki/ISO_8601).
+#'
+#'
+#' POSIXct does not allow missing date-time components. The missing components will be completed as followed.
+#' - Date: Find the median of the missing component, e.g. if only YYYY is filled, the the date will assume it's at 02nd, July of that year
+#' - Time: Find the mean of the missing component or fill in by dot, e.g. if only HH is filled, it will assume the time to be half pass HH (i.e. HH:30:00.000); if only the dot is filled (e.g. T.500 or T12.5), it will assume the time to be the amount of the last called time component (i.e. .5 days or .5 hours, which will return 12:00:00.000 and 12:30:00.000 in the previous examples)
+#' - Timezone: Find the local time zone.
+#'
+#' If the string cannot be converted, `NA` will be returned
 #'
 #' @param time
-#' @param tzone
+#' - A vector of character, in ISO8601 (read_ISO8601)
+#' - A vector of POSIXct (write_ISO8601)
+#' @param tzone A specified timezone in character. Only 1 is allowed. Use `Sys.timezone` to get the local timezone, or `OlsonNames` to get all accepted timezones.
 #'
 #' @return
+#' - A vector of POSIXct (read_ISO8601)
+#' - A vector of character in ISO8601 (write_ISO8601)
 #' @export
 #'
 #' @examples
+#' read_ISO8601(time = c("2020-01-01T12:00:00Z", "2020-01-01T12.6", "2020-01-01T250000"), tzone = "Hongkong")
+#' #which should read "2020-01-01 20:00:00 HKT" "2020-01-01 12:36:00 HKT" NA
 #' @rdname ISO8601
 read_ISO8601 = function(time, tzone = ""){
+  #Check ####
+  if(rlang::is_missing(time)){snd:::sys_abort_NoArg(time)}
+  if(rlang::is_missing(tzone)){snd:::sys_abort_NoArg(tzone)}
+  if(!is.character(time)){snd:::sys_abort_WrongClass(time, class = "character")}
+  if(!is.character(tzone)){snd:::sys_abort_WrongClass(tzone, class = "character")}
+  if(length(tzone) != 1){snd:::sys_abort_WrongLength(tzone, 1L)}
+
   #Accepted Formats ####
   formatDate = "(^D?(\\+|\\-)?\\d{8})|(^D?(\\+|\\-)?\\d{4}\\-\\d{2}\\-\\d{2})|(^D?(\\+|\\-)?\\d{4}(\\-\\d{2})?)"
   formatTime = "^T(\\d{2})?(:?\\d{2})?(:?\\d{2})?(\\.\\d{1,3})?(Z|((\\+|\\-)\\d{2}(:?\\d{2})?))?"
@@ -111,14 +156,7 @@ read_ISO8601 = function(time, tzone = ""){
   return(process$auto_tz)
 }
 
-#' Title
-#'
-#' @param time
-#'
-#' @return
 #' @export
-#'
-#' @examples
 #' @rdname ISO8601
 write_ISO8601 = function(time){
   time = tibble::tibble(time = time,
