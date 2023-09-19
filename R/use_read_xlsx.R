@@ -59,11 +59,11 @@ read_xlsx = function(xlsxFile, sheet = NULL){
 
   #Start reading in the data of the above use_ list and format all the classes accordingly ####
   data_data = lapply(X = lapply(X = usename_data, FUN = read_workbook, workbook = workbook),
-                     FUN = snd:::classify, class = "snd_data")
+                     FUN = snd:::classify_data)
   data_item_unique = lapply(X = lapply(X = usename_item_unique, FUN = read_workbook, workbook = workbook),
-                            FUN = snd:::classify, class = "snd_item")
+                            FUN = snd:::classify_item)
   data_factor_unique = lapply(X = lapply(X = usename_factor_unique, FUN = read_workbook, workbook = workbook),
-                              FUN = snd:::classify, class = "snd_factor")
+                              FUN = snd:::classify_factor)
 
   #Format itself accordingly ####
   data_data = mapply(FUN = snd:::formatRI_matrix, mtx = data_data, mtxName = usename_data, SIMPLIFY = FALSE)
@@ -71,46 +71,37 @@ read_xlsx = function(xlsxFile, sheet = NULL){
   data_factor_unique = mapply(FUN = snd:::formatRI_matrix, mtx = data_factor_unique, mtxName = usename_factor_unique, SIMPLIFY = FALSE)
 
   #Get data_item and data_factor instead of data_item_unique and data_factor_unique ####
-  data_item = usename_item
-  data_item = lapply(X = data_item,
+  data_item = lapply(X = usename_item,
                      FUN = function(X, data_item_unique){return(data_item_unique[[match(X, table = names(data_item_unique))]])},
                      data_item_unique = data_item_unique)
-
-  data_factor = usename_factor
-  data_factor = lapply(X = data_factor,
+  data_factor = lapply(X = usename_factor,
                        FUN = function(X, data_factor_unique){return(data_factor_unique[[match(X, table = names(data_factor_unique))]])},
                        data_factor_unique = data_factor_unique)
 
   #Format based on factor and item ####
-  data_data = mapply(FUN = function(data_data, data_item, usename_data){
-    use_key_item = snd::grab_mtxKey(data_item)
-    for(k in use_key_item){data_data = snd:::formatRI_key2mtx(key = k,
-                                                              formater = data_item,
-                                                              formatee = data_data,
-                                                              formateeName = usename_data)}
-    return(invisible(data_data))},
-    data_data = data_data, data_item = data_item, usename_data = usename_data, SIMPLIFY = FALSE)
+  data_data = mapply(FUN = function(data_data, data_item, data_factor, usename_data){
+    for(k in snd::grab_mtxKey(data_item)){data_data = snd:::formatRI_key2mtx(key = k,
+                                                                             formater = data_item,
+                                                                             formatee = data_data,
+                                                                             formateeName = usename_data)}
 
-  data_data = mapply(FUN = function(data_data, data_factor, usename_data){
-    use_key_factor = snd::grab_mtxKey(data_factor)
-    for(k in use_key_factor){data_data = snd:::formatRI_key2mtx(key = k,
-                                                                formater = data_factor,
-                                                                formatee = data_data,
-                                                                formateeName = usename_data)}
-    return(invisible(data_data))},
-    data_data = data_data, data_factor = data_factor, usename_data = usename_data, SIMPLIFY = FALSE)
+    for(k in snd::grab_mtxKey(data_factor)){data_data = snd:::formatRI_key2mtx(key = k,
+                                                                               formater = data_factor,
+                                                                               formatee = data_data,
+                                                                               formateeName = usename_data)}
+    return(data_data)},
+    data_data = data_data, data_item = data_item, data_factor = data_factor,
+    usename_data = usename_data, SIMPLIFY = FALSE)
 
   #Package as SND ####
-  snd = mapply(FUN = function(data_factor, data_item, data_data){
-    snd_set = list(factor = data_factor, item = data_item, data = data_data)
-    class(snd_set) = "snd_set"
-    return(snd_set)},
-    data_factor = data_factor, data_item = data_item, data_data = data_data, SIMPLIFY = FALSE)
+  snd = mapply(FUN = function(data_item, data_data, data_factor){
+    return(snd:::classify_set(list(factor = data_factor,
+                                   item = data_item,
+                                   data = data_data)))},
+    data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE)
   class(snd) = "snd"
 
   #Give them names ####
   names(snd) = stringr::str_sub(usename_data, start = 7, end = -1L)
-
-  #Return ####
   return(invisible(snd))
 }

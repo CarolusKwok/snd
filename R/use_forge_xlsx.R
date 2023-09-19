@@ -40,7 +40,7 @@ forge_xlsx = function(xlsxFile, sheet){
   }
   #Start reading in the data of the above use_ list and format all the classes accordingly ####
   data_data = lapply(X = lapply(X = use_data, FUN = read_workbook, workbook = workbook),
-                     FUN = snd:::classify, class = "snd_data")
+                     FUN = snd:::classify_data)
 
   #Format it accordingly ####
   data_data = mapply(FUN = snd:::formatRI_matrix,
@@ -69,7 +69,7 @@ forge_xlsx = function(xlsxFile, sheet){
                                                            `@format` = unlist(unname(formats)),
                                                            `@type` = "data")))
                      }) %>%
-    lapply(FUN = snd:::classify, class = "snd_item")
+    lapply(FUN = snd:::classify_item)
   #Start forging factors####
   data_factor = lapply(X = data_data,
                        FUN = function(X){
@@ -100,7 +100,7 @@ forge_xlsx = function(xlsxFile, sheet){
                                                                            `@format` = formats),
                                                         by = "@factor")
                          return(as.data.frame(unit_factor))}) %>%
-    lapply(FUN = snd:::classify, class = "snd_factor")
+    lapply(FUN = snd:::classify_factor)
   #Normal formatting just like snd::read_xlsx ####
   data_item = mapply(FUN = snd:::formatRI_matrix,
                      mtx = data_item, mtxName = use_item, SIMPLIFY = FALSE)
@@ -108,27 +108,22 @@ forge_xlsx = function(xlsxFile, sheet){
                        mtx = data_factor, mtxName = use_factor, SIMPLIFY = FALSE)
 
   data_data = mapply(FUN = function(data_data, data_item, data_factor, use_data){
-    use_key_item = snd::grab_mtxKey(data_item)
-    for(k in use_key_item){data_data = snd:::formatRI_key2mtx(key = k,
-                                                              formater = data_item,
-                                                              formatee = data_data,
-                                                              formateeName = use_data)}
-    use_key_factor = snd::grab_mtxKey(data_factor)
-    for(k in use_key_factor){data_data = snd:::formatRI_key2mtx(key = k,
-                                                                formater = data_factor,
-                                                                formatee = data_data,
-                                                                formateeName = use_data)}
-    return(invisible(data_data))},
-    data_data = data_data, data_item = data_item, data_factor = data_factor,
-    use_data = use_data, SIMPLIFY = FALSE)
+    for(k in snd::grab_mtxKey(data_item)){data_data = snd:::formatRI_key2mtx(key = k,
+                                                                             formater = data_item,
+                                                                             formatee = data_data,
+                                                                             formateeName = use_data)}
+    for(k in snd::grab_mtxKey(data_factor)){data_data = snd:::formatRI_key2mtx(key = k,
+                                                                               formater = data_factor,
+                                                                               formatee = data_data,
+                                                                               formateeName = use_data)}
+    return(data_data)},
+    data_data = data_data, data_item = data_item, data_factor = data_factor, use_data = use_data, SIMPLIFY = FALSE)
 
   #Package as SND ####
   snd = mapply(FUN = function(data_item, data_data, data_factor){
-    snd_set = list(factor = data_factor,
-                   item = data_item,
-                   data = data_data)
-    class(snd_set) = "snd_set"
-    return(snd_set)},
+    return(snd:::classify_set(list(factor = data_factor,
+                                   item = data_item,
+                                   data = data_data)))},
     data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE)
   class(snd) = "snd"
   #Give them names ####

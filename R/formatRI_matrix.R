@@ -23,7 +23,7 @@ formatRI_matrix.snd_data = function(mtx, mtxName){
   mtx = snd:::formatRI_MakeKeyType(mtx = mtx, mtxName = mtxName)
 
   #Shuffle all Keys and Factors to be in front of every item ####
-  mtx = snd:::formatRI_shuffle(mtx = mtx, mtxName = mtxName)
+  mtx = snd:::format_shuffle(mtx = mtx, mtxName = mtxName)
 
   #Format every key within the matrix ####
   for(i in snd:::grab_mtxKey(mtx)){
@@ -63,7 +63,7 @@ formatRI_matrix.snd_item = function(mtx, mtxName){
   #Create @type if absent####
   mtx = snd:::formatRI_MakeKeyType(mtx = mtx, mtxName = mtxName)
   #Shuffle all Keys and Factors to be in front of every item ####
-  mtx = snd:::formatRI_shuffle(mtx = mtx, mtxName = mtxName)
+  mtx = snd:::format_shuffle(mtx = mtx, mtxName = mtxName)
   #Format every key within the matrix ####
   for(i in snd:::grab_mtxKey(mtx)){
     mtx = snd:::formatRI_key(key = i, mtx = mtx, mtxName = mtxName)
@@ -83,7 +83,7 @@ formatRI_matrix.snd_item = function(mtx, mtxName){
 #' @rdname formatRI_matrix
 formatRI_matrix.snd_factor = function(mtx, mtxName){
   #Shuffle all Keys and Factors to be in front of every item ####
-  mtx = snd:::formatRI_shuffle(mtx = mtx, mtxName = mtxName)
+  mtx = snd:::format_shuffle(mtx = mtx, mtxName = mtxName)
   #Format every key within the matrix ####
   for(i in snd:::grab_mtxKey(mtx)){
     mtx = snd:::formatRI_key(key = i, mtx = mtx, mtxName = mtxName)

@@ -24,7 +24,7 @@ formatRI_key2mtx_format_use.DTcharacter = function(format, colItem, colName, mtx
     }
   }
   #Return ####
-  if(stringr::str_detect(string = format, pattern = "#")){
+  if(stringr::str_detect(string = format, pattern = "^[#]")){
     return(invisible(as.factor(unname(colItem_2))))
   } else {
     return(invisible(unname(colItem_2)))
@@ -34,6 +34,7 @@ formatRI_key2mtx_format_use.DTcharacter = function(format, colItem, colName, mtx
 #' @keywords internal
 #' @rdname formatRI_key2mtx
 formatRI_key2mtx_format_use.DTnumeric = function(format, colItem, colName, mtxName){
+  colItem = unname(colItem)
   #Check ####
   colItem_1 = ifelse(colItem == "#NA", NA, colItem)
   colItem_2 = suppressWarnings(as.numeric(colItem_1))
@@ -51,16 +52,19 @@ formatRI_key2mtx_format_use.DTnumeric = function(format, colItem, colName, mtxNa
     }
   }
   #Return ####
-  if(stringr::str_detect(string = format, pattern = "#")){
-    return(invisible(as.factor(unname(colItem_2))))
+  colItem = ifelse(is.na(colItem), 0, colItem_2)
+  if(stringr::str_detect(string = format, pattern = "^[#]")){
+    return(invisible(as.factor((colItem))))
   } else {
-    return(invisible(unname(colItem_2)))
+    return(invisible((colItem)))
   }
 }
 
 #' @keywords internal
 #' @rdname formatRI_key2mtx
 formatRI_key2mtx_format_use.DTinteger = function(format, colItem, colName, mtxName){
+  colItem = unname(colItem)
+
   #Check ####
   colItem_1 = ifelse(colItem == "#NA", NA, colItem)
   colItem_num = suppressWarnings(as.numeric(colItem_1))
@@ -81,10 +85,11 @@ formatRI_key2mtx_format_use.DTinteger = function(format, colItem, colName, mtxNa
   }
 
   #Return ####
-  if(stringr::str_detect(string = format, pattern = "#")){
-    return(invisible(as.factor(unname(colItem_int))))
+  colItem = ifelse(is.na(colItem), 0L, colItem_int)
+  if(stringr::str_detect(string = format, pattern = "^[#]")){
+    return(invisible(as.factor(colItem)))
   } else {
-    return(invisible(unname(colItem_int)))
+    return(invisible(colItem))
   }
 }
 
@@ -109,7 +114,7 @@ formatRI_key2mtx_format_use.DTlogical = function(format, colItem, colName, mtxNa
   colItem = match(x = colItem, table = c("p", NA, "#NA"))
   colItem = ifelse(colItem == 1, TRUE,
                    ifelse(colItem == 2, FALSE, NA))
-  if(stringr::str_detect(string = format, pattern = "#")){
+  if(stringr::str_detect(string = format, pattern = "^[#]")){
     return(invisible(as.factor(unname(colItem))))
   } else {
     return(invisible(unname(colItem)))
@@ -136,7 +141,7 @@ formatRI_key2mtx_format_use.DTPOSIXct = function(format, colItem, colName, mtxNa
     }
   }
   #Return ####
-  if(stringr::str_detect(string = format, pattern = "#")){
+  if(stringr::str_detect(string = format, pattern = "^[#]")){
     return(invisible(as.factor(colItem_2)))
   } else {
     return(invisible(colItem_2))

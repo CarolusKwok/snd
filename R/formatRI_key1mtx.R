@@ -20,8 +20,7 @@ formatRI_key = function(key, mtx, mtxName){
     snd:::sys_abort_mtxMissingSelectedKey(x = mtx, keys_missing = key, name = mtxName)
   }
   #Call other functions to format using the keys ####
-  key = stringr::str_sub(string = key, start = 2L, end = -1L)
-  class(key) = paste0("sndkey_", key)
+  key = snd:::classify_key(stringr::str_remove(string = key, pattern = "^[@]"))
   UseMethod(generic = "formatRI_key", object = key)
 }
 

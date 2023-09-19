@@ -5,6 +5,8 @@
 \alias{classify_factor}
 \alias{classify_item}
 \alias{classify_data}
+\alias{classify_set}
+\alias{classify_key}
 \title{An easier way to add additional classes to an object}
 \usage{
 classify(x, class)
@@ -14,6 +16,10 @@ classify_factor(x)
 classify_item(x)
 
 classify_data(x)
+
+classify_set(x)
+
+classify_key(x)
 }
 \arguments{
 \item{x}{Any object}
@@ -25,6 +31,7 @@ classify_data(x)
 }
 \description{
 Self-explanatory... just like the title
+For \code{classify_key}, the key doesn't need to remove \code{@} in front. It will automatically remove it for you. However, if you did remove it, it still works
 }
 \examples{
 classify(X, "snd_data")
