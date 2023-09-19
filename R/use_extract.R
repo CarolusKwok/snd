@@ -13,22 +13,22 @@
 #' @examples extract(snd, c("month1", "month3"))
 extract = function(snd, dataset = NULL){
   snd:::check_snd(snd)
-
-  #Find the things to extract ####
-  index = tibble::tibble(name = names(snd),
-                         index_factor = unname(sapply(X = snd, FUN = snd::is_snd_factor)),
-                         index_set    = unname(sapply(X = snd, FUN = snd::is_snd_set)))
-  if(sum(is.null(dataset))){
-    index = dplyr::mutate(.data = index,
-                          in_selection = TRUE)
-  } else {
-    index = dplyr::mutate(.data = index,
-                          in_selection = name %in% dataset)
+  if(is.null(dataset)){
+    snd:::sys_warn(message = c("!" = "{.arg dataset} is NULL",
+                               "i" = "All datasets within {.arg snd} will be extracted"))
+    dataset = names(snd)
   }
-  index = dplyr::mutate(.data = index,
-                        extracted = ifelse(index_factor,
-                                           TRUE,
-                                           index_set & in_selection))
-  #Extract ####
-  return(invisible(snd[index$extracted]))
+  #Extract start ####
+  ##Show warning of datasets that are not in snd ####
+  name = names(snd)
+  failed_dataset = !(dataset %in% name)
+  failed_dataset_name = dataset[failed_dataset]
+  if(sum(failed_dataset)){
+    custom = stringr::str_flatten(paste0("{.mtx ", failed_dataset_name, "}"), collapse = ", ")
+    snd:::sys_warn(c("!" = "{.arg dataset} failed",
+                     "!" = "{.arg dataset} can not find the following in {.arg snd}:",
+                     "i" = custom))
+  }
+  ##Return ####
+  return(invisible(snd[names(snd) %in% dataset]))
 }

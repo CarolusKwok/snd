@@ -17,10 +17,6 @@ forge_xlsx = function(xlsxFile, sheet){
   read_workbook = function(X, workbook){
     return(openxlsx::readWorkbook(xlsxFile = workbook, sheet = X))
   }
-  classify = function(X, class){
-    class(X) = c(class, class(X))
-    return(X)
-  }
   is_able = function(DATA, CLASS){
     func = paste0("suppressWarnings(as.", CLASS, "(DATA))")
     formated_data = eval(parse(text = func))
@@ -28,23 +24,23 @@ forge_xlsx = function(xlsxFile, sheet){
   }
 
   #Check ####
-  if(!hasArg(xlsxFile)){snd:::sys_abort_NoArg(xlsxFile)}
+  if(rlang::is_missing(xlsxFile)){snd:::sys_abort_NoArg(xlsxFile)}
   ##Grab all available sheets ####
   ava_data = snd:::grab_xlsxData(xlsxFile = xlsxFile)
   if(!hasArg(sheet)){sheet = ava_data}
   ##Continue ####
   use_data = sheet
-  use_factor = "#factor"
-  use_item = paste0("#item",
-                    stringr::str_sub(use_data, start = 6L, end = -1L))
+  use_factor = paste0("#factor", stringr::str_sub(use_data, start = 6L, end = -1L))
+  use_item = paste0("#item", stringr::str_sub(use_data, start = 6L, end = -1L))
+
   #Read in the workbook, get all available styles in the workbook n turn it into string ####
   workbook = openxlsx::loadWorkbook(xlsxFile = xlsxFile)
   for(i in 1:length(openxlsx::getStyles(wb = workbook))){
     openxlsx::replaceStyle(workbook, i, newStyle = openxlsx::createStyle(numFmt = "TEXT"))
   }
   #Start reading in the data of the above use_ list and format all the classes accordingly ####
-  data_data = lapply(X = use_data, FUN = read_workbook, workbook = workbook) %>%
-    lapply(FUN = classify, class = "snd_data")
+  data_data = lapply(X = lapply(X = use_data, FUN = read_workbook, workbook = workbook),
+                     FUN = snd:::classify, class = "snd_data")
 
   #Format it accordingly ####
   data_data = mapply(FUN = snd:::formatRI_matrix,
@@ -73,7 +69,7 @@ forge_xlsx = function(xlsxFile, sheet){
                                                            `@format` = unlist(unname(formats)),
                                                            `@type` = "data")))
                      }) %>%
-    lapply(FUN = classify, class = "snd_item")
+    lapply(FUN = snd:::classify, class = "snd_item")
   #Start forging factors####
   data_factor = lapply(X = data_data,
                        FUN = function(X){
@@ -103,42 +99,39 @@ forge_xlsx = function(xlsxFile, sheet){
                                                         y = tibble::tibble(`@factor` = factors,
                                                                            `@format` = formats),
                                                         by = "@factor")
-                         return(unit_factor)})
-  data_factor = dplyr::distinct(do.call("rbind", data_factor)) %>%
-    classify(class = "snd_factor")
+                         return(as.data.frame(unit_factor))}) %>%
+    lapply(FUN = snd:::classify, class = "snd_factor")
   #Normal formatting just like snd::read_xlsx ####
   data_item = mapply(FUN = snd:::formatRI_matrix,
                      mtx = data_item, mtxName = use_item, SIMPLIFY = FALSE)
-  data_factor = snd:::formatRI_matrix(mtx = data_factor, mtxName = use_factor)
+  data_factor = mapply(FUN = snd:::formatRI_matrix,
+                       mtx = data_factor, mtxName = use_factor, SIMPLIFY = FALSE)
 
-  data_data = mapply(FUN = function(data_data, data_item, use_data){
+  data_data = mapply(FUN = function(data_data, data_item, data_factor, use_data){
     use_key_item = snd::grab_mtxKey(data_item)
     for(k in use_key_item){data_data = snd:::formatRI_key2mtx(key = k,
                                                               formater = data_item,
                                                               formatee = data_data,
                                                               formateeName = use_data)}
+    use_key_factor = snd::grab_mtxKey(data_factor)
+    for(k in use_key_factor){data_data = snd:::formatRI_key2mtx(key = k,
+                                                                formater = data_factor,
+                                                                formatee = data_data,
+                                                                formateeName = use_data)}
     return(invisible(data_data))},
-    data_data = data_data, data_item = data_item, use_data = use_data, SIMPLIFY = FALSE)
-  use_key_factor = snd::grab_mtxKey(data_factor)
-  for(i in 1:length(data_data)){
-    for(k in use_key_factor){
-      data_data[[i]] = snd:::formatRI_key2mtx(key = k,
-                                              formater = data_factor,
-                                              formatee = data_data[[i]],
-                                              formateeName = use_data[[i]])
-    }
-  }
+    data_data = data_data, data_item = data_item, data_factor = data_factor,
+    use_data = use_data, SIMPLIFY = FALSE)
 
   #Package as SND ####
-  snd_sets = mapply(FUN = function(data_item, data_data){
-    snd_set = list(item = data_item,
+  snd = mapply(FUN = function(data_item, data_data, data_factor){
+    snd_set = list(factor = data_factor,
+                   item = data_item,
                    data = data_data)
     class(snd_set) = "snd_set"
     return(snd_set)},
-    data_item = data_item, data_data = data_data, SIMPLIFY = FALSE)
-  snd = append(list(factor = data_factor), values = snd_sets)
+    data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE)
   class(snd) = "snd"
   #Give them names ####
-  names(snd) = c("factor", stringr::str_sub(use_data, start = 7, end = -1L))
+  names(snd) = stringr::str_sub(use_data, start = 7, end = -1L)
   return(invisible(snd))
 }

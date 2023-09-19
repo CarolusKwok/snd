@@ -19,7 +19,8 @@ grab_xlsxFactor = function(xlsxFile){
   snd:::checkFile_xlsx(xlsxFile = xlsxFile)
 
   sheet_names = openxlsx::getSheetNames(file = xlsxFile)
-  sheet_names = sheet_names[sheet_names == "#factor"]
+  sheet_factor = stringr::str_sub(sheet_names, start = 1L, end = 8L)
+  sheet_names = sheet_names[sheet_factor == "#factor" | sheet_factor == "#factor_"]
   return(sheet_names)
 }
 

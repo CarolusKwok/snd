@@ -15,7 +15,6 @@ a standard abort message (if applicable)
 \description{
 A SND has a standard, fixed structure, which includes the following.
 \itemize{
-\item factor
 \item dataset 1
 \item dataset 2
 \item dataset 3
@@ -25,14 +24,15 @@ A SND has a standard, fixed structure, which includes the following.
 \details{
 which a dataset includes
 \itemize{
-\item item
-\item data
+\item snd_factor (named factor)
+\item snd_item (named item)
+\item data (named data)
 }
 
 This function checks the structure of the SND and display a warning/ abort if...
 \itemize{
-\item There is no factor matrix (Part 1)
-\item There is no datasets (Part 2, warning only)
+\item There is no datasets (Part 1, warning only)
+\item There is no factor (Part 2)
 \item There is no item (Part 3)
 \item There is no data (Part 4)
 }

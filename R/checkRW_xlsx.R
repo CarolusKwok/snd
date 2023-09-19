@@ -12,6 +12,7 @@
 #'
 #' @examples checkRW_xlsx(xlsxFile = DIR)
 checkRW_xlsx = function(xlsxFile, sheet = NULL){
+  #Input check ####
   if(!hasArg(xlsxFile)){snd:::sys_abort_NoArg(x = xlsxFile)}
   snd:::checkFile_xlsx(xlsxFile = xlsxFile)
 
@@ -23,7 +24,7 @@ checkRW_xlsx = function(xlsxFile, sheet = NULL){
     sheet = ava_data
   } else {
     if(sum(!is.character(sheet))){
-      snd:::sys_abort_WrongClass(x = sheet, class = c("character", "null"))
+      snd:::sys_abort_WrongClass(x = sheet, class = c("character", "NULL"))
     }
     if(sum(duplicated(sheet))){
       sheet = unique(sheet)
@@ -35,17 +36,22 @@ checkRW_xlsx = function(xlsxFile, sheet = NULL){
     }
   }
 
-  #Start the check ####
-  ##Check if there is a factor sheet ####
-  if(length(ava_factor) != 1){
-    snd:::sys_abort_shtUnavailable(x = xlsxFile, unavailable_sheets = "#factor")
-  }
   ##Check if arg `sheet` are present in file as data sheets####
   data_availability = (sheet %in% ava_data)
   if(sum(!data_availability)){
     data_name = sheet[!data_availability]
-    snd:::sys_abort_shtUnavailable(x = xlsxFile,
-                                   unavailable_sheets = data_name)
+    snd:::sys_abort_shtUnavailable(x = xlsxFile, unavailable_sheets = data_name)
+  }
+
+  ##Check if the data sheets have a corresponding factor sheet ####
+  check_factor = function(x, factor){
+    x = paste0("#factor", stringr::str_sub(string = x, start = 6L, end = -1L))
+    return((x %in% factor) | ("#factor" %in% factor))
+  }
+  factor_availability = unlist(lapply(X = sheet, FUN = check_factor, factor = ava_factor))
+  if(sum(!factor_availability)){
+    factor_name = paste0("#factor", stringr::str_sub(string = sheet[!factor_availability], start = 6L, end = -1L))
+    snd:::sys_abort_shtUnavailable(x = xlsxFile, unavailable_sheets = factor_name)
   }
 
   ##Check if the data sheets have a corresponding item sheet####
@@ -53,10 +59,9 @@ checkRW_xlsx = function(xlsxFile, sheet = NULL){
     x = paste0("#item", stringr::str_sub(string = x, start = 6L, end = -1L))
     return((x %in% item) | ("#item" %in% item))
   }
-
   item_availability = unlist(lapply(X = sheet, FUN = check_item, item = ava_item))
   if(sum(!item_availability)){
-    item_name = paste0("item", stringr::str_sub(string = sheet[!item_availability], start = 6L, end -1L))
+    item_name = paste0("#item", stringr::str_sub(string = sheet[!item_availability], start = 6L, end = -1L))
     snd:::sys_abort_shtUnavailable(x = xlsxFile, unavailable_sheets = item_name)
   }
 }

@@ -12,7 +12,7 @@ read_xlsx(xlsxFile, sheet = NULL)
 \item{sheet}{Name of sheets to be read it, in \code{character}. Note that only sheets containing data needs to be specified. By default (\code{NULL}), all available data will be read.}
 }
 \value{
-A SND object
+SND
 }
 \description{
 SND data can be created and formatted via external programs, e.g. Microsoft Excel, Google Sheets, and LibreOffice Calc. This function below reads in the SND data from a \code{.xlsx} file into the R environment. the datasets to read in can be specified using the \code{sheet} argument, and only the data matrix needs to be called. If a sheet name in \code{sheet} is unavailable, the function will abort.
