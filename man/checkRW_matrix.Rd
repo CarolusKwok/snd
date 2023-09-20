@@ -2,18 +2,9 @@
 % Please edit documentation in R/checkRW_matrix.R
 \name{checkRW_matrix}
 \alias{checkRW_matrix}
-\alias{checkRW_matrix.snd_data}
-\alias{checkRW_matrix.snd_item}
-\alias{checkRW_matrix.snd_factor}
 \title{System tools: Precheck for r/w data matrix}
 \usage{
 checkRW_matrix(mtx, mtxName)
-
-\method{checkRW_matrix}{snd_data}(mtx, mtxName)
-
-\method{checkRW_matrix}{snd_item}(mtx, mtxName)
-
-\method{checkRW_matrix}{snd_factor}(mtx, mtxName)
 }
 \arguments{
 \item{mtx}{The matrix}
@@ -21,7 +12,7 @@ checkRW_matrix(mtx, mtxName)
 \item{mtxName}{The name of the matrix}
 }
 \value{
-A message
+A standard abort message, if applicable
 }
 \description{
 Prior to read-in a matrix, the matrix must loosely resemble the final snd product. These functions check if the matrix fits those criteria to be transformed into a snd matrix.

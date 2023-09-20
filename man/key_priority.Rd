@@ -2,27 +2,9 @@
 % Please edit documentation in R/key_priority.R
 \name{key_priority}
 \alias{key_priority}
-\alias{key_priority.default}
-\alias{key_priority.sndkey_type}
-\alias{key_priority.sndkey_factor}
-\alias{key_priority.sndkey_item}
-\alias{key_priority.sndkey_format}
-\alias{key_priority.sndkey_label}
 \title{Obtain key execution priority}
 \usage{
 key_priority(key)
-
-\method{key_priority}{default}(key)
-
-\method{key_priority}{sndkey_type}(key)
-
-\method{key_priority}{sndkey_factor}(key)
-
-\method{key_priority}{sndkey_item}(key)
-
-\method{key_priority}{sndkey_format}(key)
-
-\method{key_priority}{sndkey_label}(key)
 }
 \arguments{
 \item{key}{A string, with the class prefixed as "sndkey_"}

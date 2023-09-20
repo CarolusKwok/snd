@@ -19,11 +19,8 @@ grab_mtxKey = function(dataframe){
   if(!is.data.frame(dataframe)){snd:::sys_abort_WrongClass(x = dataframe,
                                                            class = c("data.frame", "tbl_df", "tbl"))}
 
-  colnames = colnames(dataframe)
-  Key = stringr::str_sub(string = colnames, start = 1L, end = 1L) %>%
-    stringr::str_detect(string = "@")
-  colnames = colnames[Key]
-  return(colnames)
+  return(colnames(dataframe) %>%
+           .[stringr::str_detect(string = ., pattern = "^@")])
 }
 
 #' @export
@@ -33,11 +30,8 @@ grab_mtxFactor = function(dataframe){
   if(!is.data.frame(dataframe)){snd:::sys_abort_WrongClass(x = dataframe,
                                                            class = c("data.frame", "tbl_df", "tbl"))}
 
-  colnames = colnames(dataframe)
-  Key = stringr::str_sub(string = colnames, start = 1L, end = 1L) %>%
-    stringr::str_detect(pattern = "#")
-  colnames = colnames[Key]
-  return(colnames)
+  return(colnames(dataframe) %>%
+           .[stringr::str_detect(string = ., pattern = "^#")])
 }
 
 #' @export
@@ -47,9 +41,6 @@ grab_mtxItem = function(dataframe){
   if(!is.data.frame(dataframe)){snd:::sys_abort_WrongClass(x = dataframe,
                                                            class = c("data.frame", "tbl_df", "tbl"))}
 
-  colnames = colnames(dataframe)
-  Key = stringr::str_sub(string = colnames, start = 1L, end = 1L) %>%
-    stringr::str_detect(pattern = "#|@", negate = TRUE)
-  colnames = colnames[Key]
-  return(colnames)
+  return(colnames(dataframe) %>%
+           .[stringr::str_detect(string = ., pattern = "(^@)|(^#)", negate = TRUE)])
 }

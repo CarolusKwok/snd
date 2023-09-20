@@ -18,10 +18,8 @@ grab_xlsxFactor = function(xlsxFile){
   if(rlang::is_missing(xlsxFile)){snd:::sys_abort_NoArg(xlsxFile)}
   snd:::checkFile_xlsx(xlsxFile = xlsxFile)
 
-  sheet_names = openxlsx::getSheetNames(file = xlsxFile)
-  sheet_factor = stringr::str_sub(sheet_names, start = 1L, end = 8L)
-  sheet_names = sheet_names[sheet_factor == "#factor" | sheet_factor == "#factor_"]
-  return(sheet_names)
+  return(openxlsx::getSheetNames(file = xlsxFile) %>%
+           .[stringr::str_detect(string = ., pattern = "(^#factor$)|(^#factor_)")])
 }
 
 #' @export
@@ -30,10 +28,8 @@ grab_xlsxItem = function(xlsxFile){
   if(rlang::is_missing(xlsxFile)){snd:::sys_abort_NoArg(xlsxFile)}
   snd:::checkFile_xlsx(xlsxFile = xlsxFile)
 
-  sheet_names = openxlsx::getSheetNames(file = xlsxFile)
-  sheet_item = stringr::str_sub(sheet_names, start = 1L, end = 6L)
-  sheet_names = sheet_names[sheet_item == "#item" | sheet_item == "#item_"]
-  return(sheet_names)
+  return(openxlsx::getSheetNames(file = xlsxFile) %>%
+           .[stringr::str_detect(string = ., pattern = "(^#item$)|(^#item_)")])
 }
 
 #' @export
@@ -41,8 +37,7 @@ grab_xlsxItem = function(xlsxFile){
 grab_xlsxData = function(xlsxFile){
   if(rlang::is_missing(xlsxFile)){snd:::sys_abort_NoArg(xlsxFile)}
   snd:::checkFile_xlsx(xlsxFile = xlsxFile)
-  sheet_names = openxlsx::getSheetNames(file = xlsxFile)
-  sheet_data = stringr::str_sub(sheet_names, start = 1L, end = 6L)
-  sheet_names = sheet_names[sheet_data == "#data_"]
-  return(sheet_names)
+
+  return(openxlsx::getSheetNames(file = xlsxFile) %>%
+           .[stringr::str_detect(string = ., pattern = "(^#data$)|(^#data_)")])
 }

@@ -119,14 +119,13 @@ forge_xlsx = function(xlsxFile, sheet){
     return(data_data)},
     data_data = data_data, data_item = data_item, data_factor = data_factor, use_data = use_data, SIMPLIFY = FALSE)
 
-  #Package as SND ####
+  #Package as SND and return ####
   snd = mapply(FUN = function(data_item, data_data, data_factor){
     return(snd:::classify_set(list(factor = data_factor,
                                    item = data_item,
                                    data = data_data)))},
-    data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE)
-  class(snd) = "snd"
-  #Give them names ####
-  names(snd) = stringr::str_sub(use_data, start = 7, end = -1L)
+    data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE) %>%
+    snd:::classify(class = "snd") %>%
+    snd:::nameAs(name = stringr::str_sub(use_data, start = 7, end = -1L))
   return(invisible(snd))
 }

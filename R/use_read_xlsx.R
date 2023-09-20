@@ -51,11 +51,11 @@ read_xlsx = function(xlsxFile, sheet = NULL){
     openxlsx::replaceStyle(workbook, i, newStyle = newStyle)
   }
   #Find the unique matrix name for items to prevent reading in item multiple times
-  usename_item_unique = unique(usename_item)
-  names(usename_item_unique) = usename_item_unique
+  usename_item_unique = unique(usename_item) %>%
+    snd:::nameAs(x = ., name = .)
 
-  usename_factor_unique = unique(usename_factor)
-  names(usename_factor_unique) = usename_factor_unique
+  usename_factor_unique = unique(usename_factor) %>%
+    snd:::nameAs(x = ., name = .)
 
   #Start reading in the data of the above use_ list and format all the classes accordingly ####
   data_data = lapply(X = lapply(X = usename_data, FUN = read_workbook, workbook = workbook),
@@ -93,15 +93,13 @@ read_xlsx = function(xlsxFile, sheet = NULL){
     data_data = data_data, data_item = data_item, data_factor = data_factor,
     usename_data = usename_data, SIMPLIFY = FALSE)
 
-  #Package as SND ####
+  #Package as SND and return ####
   snd = mapply(FUN = function(data_item, data_data, data_factor){
     return(snd:::classify_set(list(factor = data_factor,
                                    item = data_item,
                                    data = data_data)))},
-    data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE)
-  class(snd) = "snd"
-
-  #Give them names ####
-  names(snd) = stringr::str_sub(usename_data, start = 7, end = -1L)
+    data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE) %>%
+    snd:::classify(class = "snd") %>%
+    snd:::nameAs(name = stringr::str_sub(usename_data, start = 7, end = -1L))
   return(invisible(snd))
 }

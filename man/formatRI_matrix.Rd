@@ -4,21 +4,12 @@
 \name{formatRI_MakeKeyType}
 \alias{formatRI_MakeKeyType}
 \alias{formatRI_matrix}
-\alias{formatRI_matrix.snd_data}
-\alias{formatRI_matrix.snd_item}
-\alias{formatRI_matrix.snd_factor}
 \alias{format_shuffle}
 \title{System tools: Formatting while doing read-in operations}
 \usage{
 formatRI_MakeKeyType(mtx, mtxName)
 
 formatRI_matrix(mtx, mtxName)
-
-\method{formatRI_matrix}{snd_data}(mtx, mtxName)
-
-\method{formatRI_matrix}{snd_item}(mtx, mtxName)
-
-\method{formatRI_matrix}{snd_factor}(mtx, mtxName)
 
 format_shuffle(mtx, mtxName)
 }

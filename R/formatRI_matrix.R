@@ -8,8 +8,6 @@
 #'
 #' @return A dataframe
 #' @keywords internal
-#'
-#' @rdname formatRI_matrix
 formatRI_matrix = function(mtx, mtxName){
   if(!hasArg(mtx)){snd:::sys_abort_NoArg(mtx)}
   snd:::checkRW_matrix(mtx = mtx, mtxName = mtxName)
@@ -17,7 +15,6 @@ formatRI_matrix = function(mtx, mtxName){
 }
 
 #' @export
-#' @rdname formatRI_matrix
 formatRI_matrix.snd_data = function(mtx, mtxName){
   ##Create @type if absent ####
   mtx = snd:::formatRI_MakeKeyType(mtx = mtx, mtxName = mtxName)
@@ -58,7 +55,6 @@ formatRI_matrix.snd_data = function(mtx, mtxName){
 }
 
 #' @export
-#' @rdname formatRI_matrix
 formatRI_matrix.snd_item = function(mtx, mtxName){
   #Create @type if absent####
   mtx = snd:::formatRI_MakeKeyType(mtx = mtx, mtxName = mtxName)
@@ -80,7 +76,6 @@ formatRI_matrix.snd_item = function(mtx, mtxName){
 }
 
 #' @export
-#' @rdname formatRI_matrix
 formatRI_matrix.snd_factor = function(mtx, mtxName){
   #Shuffle all Keys and Factors to be in front of every item ####
   mtx = snd:::format_shuffle(mtx = mtx, mtxName = mtxName)

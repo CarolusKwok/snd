@@ -4,8 +4,7 @@ formatRI_key2mtx_format_use = function(format, colItem, colName, mtxName){
   UseMethod(generic = "formatRI_key2mtx_format_use", object = format)
 }
 
-#' @keywords internal
-#' @rdname formatRI_key2mtx
+#' @export
 formatRI_key2mtx_format_use.DTcharacter = function(format, colItem, colName, mtxName){
   #Check ####
   colItem_1 = ifelse(colItem == "#NA", NA, colItem)
@@ -31,8 +30,7 @@ formatRI_key2mtx_format_use.DTcharacter = function(format, colItem, colName, mtx
   }
 }
 
-#' @keywords internal
-#' @rdname formatRI_key2mtx
+#' @export
 formatRI_key2mtx_format_use.DTnumeric = function(format, colItem, colName, mtxName){
   colItem = unname(colItem)
   #Check ####
@@ -60,8 +58,7 @@ formatRI_key2mtx_format_use.DTnumeric = function(format, colItem, colName, mtxNa
   }
 }
 
-#' @keywords internal
-#' @rdname formatRI_key2mtx
+#' @export
 formatRI_key2mtx_format_use.DTinteger = function(format, colItem, colName, mtxName){
   colItem = unname(colItem)
 
@@ -93,8 +90,7 @@ formatRI_key2mtx_format_use.DTinteger = function(format, colItem, colName, mtxNa
   }
 }
 
-#' @keywords internal
-#' @rdname formatRI_key2mtx
+#' @export
 formatRI_key2mtx_format_use.DTlogical = function(format, colItem, colName, mtxName){
   #Check ####
   colItem_test = colItem %in% c("p", NA, "#NA")
@@ -121,8 +117,7 @@ formatRI_key2mtx_format_use.DTlogical = function(format, colItem, colName, mtxNa
   }
 }
 
-#' @keywords internal
-#' @rdname formatRI_key2mtx
+#' @export
 formatRI_key2mtx_format_use.DTPOSIXct = function(format, colItem, colName, mtxName){
   #Check ####
   colItem_1 = ifelse(colItem == "#NA", NA, colItem)

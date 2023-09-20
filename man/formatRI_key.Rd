@@ -2,36 +2,9 @@
 % Please edit documentation in R/formatRI_key1mtx.R
 \name{formatRI_key}
 \alias{formatRI_key}
-\alias{formatRI_key.sndkey_type}
-\alias{formatRI_key.sndkey_item}
-\alias{formatRI_key.sndkey_format}
-\alias{formatRI_key.sndkey_format.snd_factor}
-\alias{formatRI_key.sndkey_format.snd_item}
-\alias{formatRI_key.sndkey_factor}
-\alias{formatRI_key.sndkey_label}
-\alias{formatRI_key.sndkey_label.snd_factor}
-\alias{formatRI_key.sndkey_label.snd_item}
 \title{System tools: Checking and Formatting the keys during read-in.}
 \usage{
 formatRI_key(key, mtx, mtxName)
-
-\method{formatRI_key}{sndkey_type}(key, mtx, mtxName)
-
-\method{formatRI_key}{sndkey_item}(key, mtx, mtxName)
-
-formatRI_key.sndkey_format(key, mtx, mtxName)
-
-\method{formatRI_key}{sndkey_format.snd_factor}(key, mtx, mtxName)
-
-\method{formatRI_key}{sndkey_format.snd_item}(key, mtx, mtxName)
-
-\method{formatRI_key}{sndkey_factor}(key, mtx, mtxName)
-
-formatRI_key.sndkey_label(key, mtx, mtxName)
-
-\method{formatRI_key}{sndkey_label.snd_factor}(key, mtx, mtxName)
-
-\method{formatRI_key}{sndkey_label.snd_item}(key, mtx, mtxName)
 }
 \arguments{
 \item{key}{The key in \code{character}. Only 1 key will be accepted.}

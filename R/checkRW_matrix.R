@@ -7,9 +7,8 @@
 #' @param mtx The matrix
 #' @param mtxName The name of the matrix
 #'
-#' @return A message
+#' @return A standard abort message, if applicable
 #' @keywords Internal
-#'
 #' @rdname checkRW_matrix
 checkRW_matrix = function(mtx, mtxName){
   #Checks ####
@@ -22,7 +21,6 @@ checkRW_matrix = function(mtx, mtxName){
 }
 
 #' @export
-#' @rdname checkRW_matrix
 checkRW_matrix.snd_data = function(mtx, mtxName){
   #Check if dataframe consist of >= 1 factor, >= item ####
   ava_key = snd:::grab_mtxKey(mtx)
@@ -33,7 +31,6 @@ checkRW_matrix.snd_data = function(mtx, mtxName){
 }
 
 #' @export
-#' @rdname checkRW_matrix
 checkRW_matrix.snd_item = function(mtx, mtxName){
   #Check if the dataframe contains @item	@format ####
   ava_key = snd:::grab_mtxKey(mtx)
@@ -48,7 +45,6 @@ checkRW_matrix.snd_item = function(mtx, mtxName){
 }
 
 #' @export
-#' @rdname checkRW_matrix
 checkRW_matrix.snd_factor = function(mtx, mtxName){
   #Check if the dataframe contains @factor @format @label ####
   ava_key = snd:::grab_mtxKey(mtx)

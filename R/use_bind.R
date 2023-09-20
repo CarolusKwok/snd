@@ -32,7 +32,7 @@ bind = function(snd1, snd2){
                 ifelse(snd2_name %in% duplicated_names, paste0(snd2_name, ".2"), snd2_name))
 
   ##bind into snd3 ####
-  snd3 = c(snd1_dataset, snd2_dataset)
-  names(snd3) = c(snd3_name)
+  snd3 = c(snd1_dataset, snd2_dataset) %>%
+    snd:::nameAs(name = snd3_name)
   return(invisible(snd3))
 }
