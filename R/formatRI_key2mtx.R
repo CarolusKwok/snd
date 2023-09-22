@@ -35,8 +35,7 @@ formatRI_key2mtx.sndkey_type = function(key, formater, formatee, formateeName){
 formatRI_key2mtx.sndkey_factor = function(key, formater, formatee, formateeName){
   #Factor checks if the formatee is described
   use_factor = snd::grab_mtxFactor(formatee)
-  ava_factor = unique(formater$`@factor`)
-  test = !(use_factor %in% ava_factor)
+  test = !(use_factor %in% unique(formater$`@factor`))
   if(sum(test)){
     fail = use_factor[test]
     snd:::sys_abort_mtxMissingSelectedFactor(x = formatee,
@@ -51,8 +50,7 @@ formatRI_key2mtx.sndkey_factor = function(key, formater, formatee, formateeName)
 formatRI_key2mtx.sndkey_item = function(key, formater, formatee, formateeName){
   #Item checks if the formatee is described
   use_item = snd::grab_mtxItem(formatee)
-  ava_item = unique(formater$`@item`)
-  test = !(use_item %in% ava_item)
+  test = !(use_item %in% unique(formater$`@item`))
   if(sum(test)){
     fail = use_item[test]
     snd:::sys_abort_mtxMissingSelectedItem(x = formatee,
@@ -82,20 +80,16 @@ formatRI_key2mtx_sndkey_format.snd_factor = function(key, formater, formatee, fo
   factorName = snd::grab_mtxFactor(formatee)
   format = lapply(X = factorName,
                   FUN = function(X, df){
-                    selected = dplyr::filter(.data = df, `@factor` == X)$`@format`
-                    selected = unique(unlist(selected))
-                    selected = snd:::classify(x = selected,
-                                              class = paste0("DT",
-                                                             stringr::str_remove(string = selected,
-                                                                                 pattern = "^#")))
-                    return(selected)
-                  }, df = formater)
+                    unique(unlist(dplyr::filter(.data = df, `@factor` == X)$`@format`)) %>%
+                      snd:::classify(x = .,
+                                     class = paste0("DT",
+                                                    stringr::str_remove(string = .,
+                                                                        pattern = "^#"))) %>%
+                      return},
+                  df = formater)
   factorData = lapply(X = factorName,
-                 FUN = function(X, df){
-                   selected = dplyr::select(.data = df, {{X}})
-                   selected = unname(unlist(selected))
-                   return(selected)
-                 }, df = formatee)
+                      FUN = function(X, df){return(unname(unlist(dplyr::select(.data = df, {{X}}))))},
+                      df = formatee)
   formated = mapply(FUN = snd:::formatRI_key2mtx_format_use,
                     format = format,
                     colItem = factorData,
@@ -124,20 +118,16 @@ formatRI_key2mtx_sndkey_format.snd_item = function(key, formater, formatee, form
   itemName = snd::grab_mtxItem(formatee)
   format = lapply(X = itemName,
                   FUN = function(X, df){
-                    selected = dplyr::filter(.data = df, `@item` == X)$`@format`
-                    selected = unique(unlist(selected))
-                    selected = snd:::classify(x = selected,
-                                              class = paste0("DT",
-                                                             stringr::str_remove(string = selected,
-                                                                                 pattern = "^#")))
-                    return(selected)
-                  }, df = formater)
+                    unique(unlist(dplyr::filter(.data = df, `@item` == X)$`@format`)) %>%
+                      snd:::classify(x = .,
+                                     class = paste0("DT",
+                                                    stringr::str_remove(string = .,
+                                                                        pattern = "^#"))) %>%
+                      return},
+                  df = formater)
   itemData = lapply(X = itemName,
-                      FUN = function(X, df){
-                        selected = dplyr::select(.data = df, {{X}})
-                        selected = unname(unlist(selected))
-                        return(selected)
-                      }, df = formatee)
+                    FUN = function(X, df){return(unname(unlist(dplyr::select(.data = df, {{X}}))))},
+                    df = formatee)
   formated = mapply(FUN = snd:::formatRI_key2mtx_format_use,
                     format = format,
                     colItem = itemData,
@@ -178,32 +168,28 @@ formatRI_key2mtx_sndkey_label.snd_factor = function(key, formater, formatee, for
   factorName = snd:::grab_mtxFactor(formatee)
   format = lapply(X = factorName,
                   FUN = function(X, df){
-                    selected = unique(unlist(dplyr::filter(.data = df, `@factor` == X)$`@format`))
-                    selected = snd:::classify(x = selected,
-                                              class = paste0("DT",
-                                                             stringr::str_remove(string = selected,
-                                                                                 pattern = "^#")))
-                    return(selected)
-                  }, df = formater)
+                    unique(unlist(dplyr::filter(.data = df, `@factor` == X)$`@format`)) %>%
+                      snd:::classify(x = .,
+                                     class = paste0("DT",
+                                                    stringr::str_remove(string = .,
+                                                                        pattern = "^#"))) %>%
+                      return},
+                  df = formater)
   label  = lapply(X = factorName,
                   FUN = function(X, df){
-                    selected = unique(unlist(dplyr::filter(.data = df, `@factor` == X)$`@label`))
-                    return(selected)
+                    return(unique(unlist(dplyr::filter(.data = df, `@factor` == X)$`@label`)))
                   }, df = formater)
   factorData = lapply(X = factorName,
                       FUN = function(X, df){
-                        selected = unique(unlist(dplyr::select(.data = df, {{X}})))
-                        return(selected)
+                        return(unique(unlist(dplyr::select(.data = df, {{X}}))))
                         }, df = formatee)
   supportedFormat = list(snd:::sys_format_support(with_abbr = T))
-
   test = mapply(FUN =
                   function(factorName, format, label, factorData, supportedFormat){
                     if("###" %in% label){
                       return(FALSE) #FALSE if everythings fine
                     } else {
-                      supportFormat = as.data.frame(supportedFormat)
-                      defaultValue = unlist(dplyr::filter(.data = supportFormat,
+                      defaultValue = unlist(dplyr::filter(.data = as.data.frame(supportedFormat),
                                                           full == unclass(stringr::str_remove(string = format, pattern = "^#")))$default)
                       label = unique(snd:::formatRI_key2mtx_format_use(format = format,
                                                                        colItem = c(label, defaultValue),
@@ -214,10 +200,9 @@ formatRI_key2mtx_sndkey_label.snd_factor = function(key, formater, formatee, for
   factorName = factorName, format = format, label = label, factorData = factorData, supportedFormat = supportedFormat,
   SIMPLIFY = TRUE, USE.NAMES = FALSE)
   if(sum(test)){
-    fail = factorName[test]
     snd:::sys_abort_mtxKeyLabelIncorrectlyDescribeData(x = formatee,
                                                        name = formateeName,
-                                                       failed_columns = fail)
+                                                       failed_columns = factorName[test])
   }
   #Return if OK
   return(formatee)
@@ -241,22 +226,16 @@ formatRI_key2mtx_sndkey_label.snd_item = function(key, formater, formatee, forma
   itemName = snd:::grab_mtxItem(formatee)
   format = lapply(X = itemName,
                   FUN = function(X, df){
-                    selected = unique(unlist(dplyr::filter(.data = df, `@item` == X)$`@format`))
-                    selected = snd:::classify(x = selected,
-                                              class = paste0("DT",
-                                                             stringr::str_remove(string = selected,
-                                                                                 pattern = "^#")))
-                    return(selected)
-                  }, df = formater)
+                    unique(unlist(dplyr::filter(.data = df, `@item` == X)$`@format`)) %>%
+                    snd:::classify(x = .,
+                                   class = paste0("DT",
+                                                  stringr::str_remove(string = ., pattern = "^#"))) %>%
+                    return}, df = formater)
   label  = lapply(X = itemName,
-                  FUN = function(X, df){
-                    selected = unique(unlist(dplyr::filter(.data = df, `@item` == X)$`@label`))
-                    return(selected)
-                  }, df = formater)
+                  FUN = function(X, df){return(unique(unlist(dplyr::filter(.data = df, `@item` == X)$`@label`)))},
+                  df = formater)
   itemData = lapply(X = itemName,
-                    FUN = function(X, df){
-                      selected = unique(unlist(dplyr::select(.data = df, {{X}})))
-                      return(selected)},
+                    FUN = function(X, df){return(unique(unlist(dplyr::select(.data = df, {{X}}))))},
                     df = formatee)
   supportedFormat = list(snd:::sys_format_support(with_abbr = T))
 
@@ -265,8 +244,7 @@ formatRI_key2mtx_sndkey_label.snd_item = function(key, formater, formatee, forma
                     if("###" %in% label){
                       return(FALSE) #FALSE if everythings fine
                     } else {
-                      supportFormat = as.data.frame(supportedFormat)
-                      defaultValue = unlist(dplyr::filter(.data = supportFormat,
+                      defaultValue = unlist(dplyr::filter(.data = as.data.frame(supportedFormat),
                                                           full == unclass(stringr::str_remove(string = format, pattern = "^#")))$default)
                       label = unique(snd:::formatRI_key2mtx_format_use(format = format,
                                                                        colItem = c(label, defaultValue),
@@ -277,10 +255,9 @@ formatRI_key2mtx_sndkey_label.snd_item = function(key, formater, formatee, forma
                 itemName = itemName, format = format, label = label, itemData = itemData, supportedFormat = supportedFormat,
                 SIMPLIFY = TRUE, USE.NAMES = FALSE)
   if(sum(test)){
-    fail = itemName[test]
     snd:::sys_abort_mtxKeyLabelIncorrectlyDescribeData(x = formatee,
                                                        name = formateeName,
-                                                       failed_columns = fail)
+                                                       failed_columns = itemName[test])
   }
   #Return if OK
   return(formatee)
