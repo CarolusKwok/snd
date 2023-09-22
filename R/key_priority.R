@@ -19,7 +19,9 @@ key_priority.sndkey_factor = function(key){return( 5000)}
 key_priority.sndkey_item   = function(key){return( 5000)}
 
 #' @export
-key_priority.sndkey_label = function(key){return(  2500)}
+key_priority.sndkey_format = function(key){return( 2500)}
 
 #' @export
-key_priority.sndkey_format = function(key){return( 1250)}
+key_priority.sndkey_label = function(key){return(  1250)}
+
+

@@ -26,8 +26,7 @@ formatRI_key = function(key, mtx, mtxName){
 formatRI_key.sndkey_type = function(key, mtx, mtxName){
   #Check if @type is of the following classes.
   #If not, type it as "error"
-  keyType = mtx$`@type`
-  keyType_CorrectTest = keyType %in% c("data", "calc", "stat")
+  keyType_CorrectTest = mtx$`@type` %in% c("data", "calc", "stat")
   if(sum(!keyType_CorrectTest)){
     mtx = dplyr::mutate(.data = mtx,
                         `@type` = ifelse(!keyType_CorrectTest, "error", `@type`))
@@ -45,6 +44,22 @@ formatRI_key.sndkey_type = function(key, mtx, mtxName){
 }
 
 #' @export
+formatRI_key.sndkey_factor = function(key, mtx, mtxName){
+  #Check if @factor is all filled or not
+  keyFactor = mtx$`@factor`
+  if(sum(is.na(keyFactor) | keyFactor == "#NA")){
+    snd:::sys_abort_mtxColNotAllFilled(x = mtx, name = mtxName, columns = "@factor")
+  }
+  #Check if @item is a factor or not
+  if(sum(!stringr::str_detect(string = keyFactor, pattern = "^#"))){
+    snd:::sys_abort_mtxColContainFactorFactor(x = mtx,
+                                              name = mtxName,
+                                              columns = "@factor")
+  }
+  return(invisible(mtx))
+}
+
+#' @export
 formatRI_key.sndkey_item = function(key, mtx, mtxName){
   #Check if @item is filled or not
   keyItem = mtx$`@item`
@@ -54,21 +69,6 @@ formatRI_key.sndkey_item = function(key, mtx, mtxName){
   #Check if @item is a factor or not
   if(sum(stringr::str_detect(string = keyItem, pattern = "^#"))){
     snd:::sys_abort_mtxColContainFactor(x = mtx, name = mtxName, columns = "@item")
-  }
-  return(invisible(mtx))
-}
-
-#' @export
-formatRI_key.sndkey_factor = function(key, mtx, mtxName){
-  #Check if @factor is all filled or not
-  keyFactor = mtx$`@factor`
-  if(sum(is.na(keyFactor) | keyFactor == "#NA")){
-    snd:::sys_abort_mtxColNotAllFilled(x = mtx, name = mtxName, columns = "@factor")
-  }
-  #Check if @item is a factor or not
-  test = stringr::str_sub(string = keyFactor, start = 1L, end = 1L)
-  if(sum(test != "#")){
-    snd:::sys_abort_mtxColContainFactorFactor(x = mtx, name = mtxName, columns = "@factor")
   }
   return(invisible(mtx))
 }
@@ -184,7 +184,6 @@ formatRI_key.sndkey_format.snd_item = function(key, mtx, mtxName){
   return(invisible(mtx))
 }
 
-
 #' @export
 formatRI_key.sndkey_label = function(key, mtx, mtxName){
   UseMethod(generic = "formatRI_key.sndkey_label", object = mtx)
@@ -219,7 +218,8 @@ formatRI_key.sndkey_label.snd_factor = function(key, mtx, mtxName){
                                                failed_groups = failed_groups,
                                                exclusive_item = "###")
   }
-  #Checkpoint 4: Turn #NA into actually NA
+
+  #Checkpoint 4: Turn #NA into actually NA ####
   mtx = dplyr::mutate(.data = mtx,
                       `@label` = ifelse(`@label` == "#NA", NA, `@label`))
 
@@ -259,9 +259,11 @@ formatRI_key.sndkey_label.snd_item = function(key, mtx, mtxName){
                                                failed_groups = failed_groups,
                                                exclusive_item = "###")
   }
-  #Checkpoint 4: Turn #NA into actually NA
+
+  #Checkpoint 4: Turn #NA into actually NA ####
   mtx = dplyr::mutate(.data = mtx,
                       `@label` = ifelse(`@label` == "#NA", NA, `@label`))
+
   #Return ####
   return(invisible(mtx))
 }
