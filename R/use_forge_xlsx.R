@@ -47,65 +47,50 @@ forge_xlsx = function(xlsxFile, sheet){
                      mtx = data_data,
                      mtxName = use_data)
 
-  #Start forging items####
-  data_item = lapply(X = data_data,
-                     FUN = function(X){
-                       items = snd::grab_mtxItem(X)
-                       formats = lapply(X = items,
-                                        FUN = function(X, data){
-                                          selected_data = unlist(data[,match(x = X, table = colnames(data))]) %>%
-                                            ifelse(. == "#NA", NA, .)
-                                          ##Try format it ####
-                                          table = list(logical = !(sum(!(selected_data %in% c("p", NA)))),
-                                                       POSIXct = inherits(x = tryCatch(as.POSIXct(selected_data,
-                                                                                                  tryFormats = c("%Y%m%d-%H%M%OS", "%Y%m%d-%H%M")),
-                                                                                       error = function(e){return("FAIL")}),
-                                                                          what = "POSIXct"),
-                                                       numeric = is_able(DATA = selected_data, CLASS = "numeric"),
-                                                       character = TRUE)
-                                          return(unlist(names(table)[[match(x = TRUE, table = table)]]))},
-                                        data = X)
-                       return(as.data.frame(tibble::tibble(`@item` = unlist(unname(items)),
-                                                           `@format` = unlist(unname(formats)),
-                                                           `@type` = "data")))
-                     }) %>%
-    lapply(FUN = snd:::classify_item)
-  #Start forging factors####
-  data_factor = lapply(X = data_data,
-                       FUN = function(X){
-                         ##Give it @factor and @label ####
-                         factors = snd::grab_mtxFactor(X)
-                         unit_factor = X[,match(x = factors, table = colnames(X))] %>%
-                           tidyr::pivot_longer(cols = dplyr::all_of(factors),
-                                               names_to = "@factor",
-                                               values_to = "@label") %>%
-                           dplyr::distinct() %>%
-                           dplyr::arrange(`@factor`)
-                         ##Give it @datatype ####
-                         formats = lapply(X = factors,
-                                          FUN = function(X, DATA){
-                                            used_factor = unlist(dplyr::filter(.data = DATA, `@factor` == X)$`@label`) %>%
-                                              ifelse(. == "#NA", NA, .)
-                                            table = list(logical = !(sum(!(used_factor %in% c("p", NA)))),
-                                                         time = inherits(x = tryCatch(as.POSIXct(used_factor,
-                                                                                                 tryFormats = c("%Y%m%d-%H%M%OS", "%Y%m%d-%H%M")),
-                                                                                      error = function(e){return("FAIL")}),
-                                                                         what = "POSIXct"),
-                                                         numeric = is_able(DATA = used_factor, CLASS = "numeric"),
-                                                         character = TRUE)
-                                            return(names(table)[[match(x = TRUE, table = table)]])},
-                                          DATA = unit_factor) %>% unlist
-                         unit_factor = dplyr::left_join(x = unit_factor,
-                                                        y = tibble::tibble(`@factor` = factors,
-                                                                           `@format` = formats),
-                                                        by = "@factor")
-                         return(as.data.frame(unit_factor))}) %>%
-    lapply(FUN = snd:::classify_factor)
+  #Forge factors, Factors need @factor @label @format ####
+  data_factor = lapply(X = lapply(X = data_data,
+                                  FUN = function(X){
+                                    factor = snd::grab_mtxFactor(X)
+                                    format = sapply(X = factor,
+                                                    FUN = function(X, data){
+                                                      selected = unlist(unname(dplyr::select(.data = data, {{X}})))
+                                                      return(snd:::format_detect(selected))},
+                                                    data = X, simplify = TRUE, USE.NAMES = FALSE)
+                                    label = sapply(X = factor,
+                                                   FUN = function(X, data){
+                                                     selected = unlist(unname(dplyr::select(.data = data, {{X}})))
+                                                     return(unique(selected))},
+                                                   data = X, simplify = FALSE, USE.NAMES = FALSE)
+                                    frame = mapply(FUN = function(factor, format, label){
+                                      frame = tibble::tibble(`@factor` = factor,
+                                                             `@format` = format,
+                                                             `@label` = label) %>% as.data.frame
+                                      return(frame)},
+                                      factor = factor, format = format, label = label, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+                                    return(do.call("rbind", frame))}),
+                       FUN = snd:::classify_factor)
+
+  #Forge items, Items need @type @format @item ####
+  data_item = lapply(X = lapply(X = data_data,
+                                FUN = function(X){
+                                  item = snd::grab_mtxItem(X)
+                                  format = sapply(X = item,
+                                                  FUN = function(X, data){
+                                                    selected = unlist(unname(dplyr::select(.data = data, {{X}})))
+                                                    return(snd:::format_detect(selected))},
+                                                  data = X, simplify = TRUE, USE.NAMES = FALSE)
+                                  frame = tibble::tibble(`@type` = "data",
+                                                         `@item` = item,
+                                                         `@format` = format) %>% as.data.frame
+                                  return(frame)
+                                }),
+                     FUN = snd:::classify_item)
+
   #Normal formatting just like snd::read_xlsx ####
-  data_item = mapply(FUN = snd:::formatRI_matrix,
-                     mtx = data_item, mtxName = use_item, SIMPLIFY = FALSE)
   data_factor = mapply(FUN = snd:::formatRI_matrix,
                        mtx = data_factor, mtxName = use_factor, SIMPLIFY = FALSE)
+  data_item = mapply(FUN = snd:::formatRI_matrix,
+                     mtx = data_item, mtxName = use_item, SIMPLIFY = FALSE)
 
   data_data = mapply(FUN = function(data_data, data_item, data_factor, use_data){
     for(k in snd::grab_mtxKey(data_item)){data_data = snd:::formatRI_key2mtx(key = k,

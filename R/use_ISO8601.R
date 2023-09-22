@@ -50,8 +50,8 @@ read_ISO8601 = function(time, tzone = ""){
   #Check ####
   if(rlang::is_missing(time)){snd:::sys_abort_NoArg(time)}
   if(rlang::is_missing(tzone)){snd:::sys_abort_NoArg(tzone)}
-  if(!is.character(time)){snd:::sys_abort_WrongClass(time, class = "character")}
-  if(!is.character(tzone)){snd:::sys_abort_WrongClass(tzone, class = "character")}
+  time = as.character(time)
+  tzone = as.character(tzone)
   if(length(tzone) != 1){snd:::sys_abort_WrongLength(tzone, 1L)}
 
   #Accepted Formats ####

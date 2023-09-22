@@ -8,7 +8,7 @@
 \usage{
 formatRI_key2mtx(key, formater, formatee, formateeName)
 
-formatRI_key2mtx_format_use(format, colItem, colName, mtxName)
+formatRI_key2mtx_format_use(format, colItem, colName, mtxName, force = FALSE)
 }
 \arguments{
 \item{key}{The key in \code{character}. Only 1 key will be accepted.}
