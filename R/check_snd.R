@@ -5,6 +5,7 @@
 #' * dataset 2
 #' * dataset 3
 #' * ...
+#' * OS
 #'
 #' which a dataset includes
 #' * snd_factor (named factor)
@@ -67,6 +68,17 @@ check_snd = function(snd){
     snd:::sys_abort(message = c("x" = "Lack {.mtx data} for datasets",
                                 "!" = "{.mtx data} descibes all the data in datasets",
                                 "!" = "There must be only 1 {.mtx data} in each dataset",
+                                "i" = "Please check if {.arg {arg}} is corrupted"),
+                    x = snd)
+  }
+  #Part 5 snd_os check ####
+  OS = sapply(X = snd,
+              FUN = snd::is_snd_os,
+              simplify = TRUE, USE.NAMES = FALSE)
+  if(sum(OS) != 1){
+    snd:::sys_abort(message = c("x" = "Lack {.mtx OS}",
+                                "!" = "{.mtx OS} descibes how the snd/ seal functions should operate",
+                                "!" = "There should be only 1 {.mtx data} in snd",
                                 "i" = "Please check if {.arg {arg}} is corrupted"),
                     x = snd)
   }

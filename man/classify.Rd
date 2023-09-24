@@ -6,6 +6,8 @@
 \alias{classify_item}
 \alias{classify_data}
 \alias{classify_set}
+\alias{classify_snd}
+\alias{classify_os}
 \alias{classify_key}
 \title{An easier way to add additional classes to an object}
 \usage{
@@ -18,6 +20,10 @@ classify_item(x)
 classify_data(x)
 
 classify_set(x)
+
+classify_snd(x)
+
+classify_os(x)
 
 classify_key(x)
 }

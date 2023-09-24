@@ -18,7 +18,7 @@ formatRI_key = function(key, mtx, mtxName){
     snd:::sys_abort_mtxMissingSelectedKey(x = mtx, keys_missing = key, name = mtxName)
   }
   #Call other functions to format using the keys ####
-  key = snd:::classify_key(stringr::str_remove(string = key, pattern = "^[@]"))
+  key = snd:::classify_key(stringr::str_remove(string = key, pattern = "^@"))
   UseMethod(generic = "formatRI_key", object = key)
 }
 
@@ -199,15 +199,17 @@ formatRI_key.sndkey_label.snd_factor = function(key, mtx, mtxName){
   seperated_matrix = lapply(X = unique_factor,
                             FUN = function(X, mtx){return(dplyr::filter(.data = mtx, `@factor` == X))},
                             mtx = mtx)
-  test_duplicate = unlist(lapply(X = seperated_matrix, FUN = function(X){duplicated(X$`@label`) %>% sum() %>% as.logical() %>% return()}))
+  test_duplicate = sapply(X = seperated_matrix, FUN = function(X){return(as.logical(sum(duplicated(X$`@label`))))},
+                          simplify = TRUE, USE.NAMES = FALSE)
 
   if(sum(test_duplicate)){
-    failed_groups = unique_factor[test_duplicate]
-    snd:::sys_abort_mtxColGrpItemsNotUnique(x = mtx, name = mtxName, columns = "@label", group_by = "@factor", failed_groups = failed_groups)
+    snd:::sys_abort_mtxColGrpItemsNotUnique(x = mtx,
+                                            name = mtxName, columns = "@label", group_by = "@factor",
+                                            failed_groups = unique_factor[test_duplicate])
   }
   #Checkpoint 3: check if ### is included with other labels
-  test_hash = unlist(lapply(X = seperated_matrix, FUN = function(X){return("###" %in% X$`@label`)}))
-  test_nrow = unlist(lapply(X = seperated_matrix, FUN = function(X){return(nrow(X) > 1)}))
+  test_hash = sapply(X = seperated_matrix, FUN = function(X){return("###" %in% X$`@label`)}, simplify = TRUE, USE.NAMES = FALSE)
+  test_nrow = sapply(X = seperated_matrix, FUN = function(X){return(nrow(X) > 1)}, simplify = TRUE, USE.NAMES = FALSE)
   test_binded = test_hash & test_nrow
 
   if(sum(test_binded)){
@@ -237,26 +239,27 @@ formatRI_key.sndkey_label.snd_item = function(key, mtx, mtxName){
   seperated_matrix = lapply(X = unique_item,
                             FUN = function(X, mtx){return(dplyr::filter(.data = mtx, `@item` == X))},
                             mtx = mtx)
-  test_duplicate = unlist(lapply(X = seperated_matrix, FUN = function(X){duplicated(X$`@label`) %>% sum() %>% as.logical() %>% return()}))
+  test_duplicate = sapply(X = seperated_matrix, FUN = function(X){return(as.logical(sum(duplicated(X$`@label`))))},
+                          simplify = TRUE, USE.NAMES = FALSE)
 
   if(sum(test_duplicate)){
-    failed_groups = unique_item[test_duplicate]
     snd:::sys_abort_mtxColGrpItemsNotUnique(x = mtx, name = mtxName,
                                             columns = "@label",
                                             group_by = "@item",
-                                            failed_groups = failed_groups)
+                                            failed_groups = unique_item[test_duplicate])
   }
   #Checkpoint 3: check if ### is included with other labels
-  test_hash = unlist(lapply(X = seperated_matrix, FUN = function(X){return("###" %in% X$`@label`)}))
-  test_nrow = unlist(lapply(X = seperated_matrix, FUN = function(X){return(nrow(X) > 1)}))
+  test_hash = sapply(X = seperated_matrix, FUN = function(X){return("###" %in% X$`@label`)},
+                     simplify = TRUE, USE.NAMES = FALSE)
+  test_nrow = sapply(X = seperated_matrix, FUN = function(X){return(nrow(X) > 1)},
+                     simplify = TRUE, USE.NAMES = FALSE)
   test_binded = test_hash & test_nrow
 
   if(sum(test_binded)){
-    failed_groups = unique_factor[test_binded]
     snd:::sys_abort_mtxColGrpItemsNotExclusive(x = mtx, name = mtxName,
                                                columns = "@label",
                                                group_by = "@item",
-                                               failed_groups = failed_groups,
+                                               failed_groups = unique_factor[test_binded],
                                                exclusive_item = "###")
   }
 

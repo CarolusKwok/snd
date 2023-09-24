@@ -18,21 +18,41 @@ bind = function(snd1, snd2){
   snd:::check_snd(snd2)
 
   #Start binding ####
-  ##Extract factors, datasets n names ####
-  snd1_dataset = snd1[sapply(X = snd1, snd::is_snd_set)]
-  snd2_dataset = snd2[sapply(X = snd2, snd::is_snd_set)]
+  ## Find all set names in snd1 and snd2, combine to find snd3's names####
+  grabSNDSetNames = function(snd){
+    sapply(snd1, FUN = snd::is_snd_set) %>%
+      .[.] %>%
+      names %>%
+      return
+  }
 
-  snd1_name = names(snd1_dataset)
-  snd2_name = names(snd2_dataset)
+  snd1_originalnames = grabSNDSetNames(snd = snd1)
+  snd2_originalnames = grabSNDSetNames(snd = snd2)
+  ## Find duplicated names ####
+  snd3_dupnames = c(snd1_originalnames, snd2_originalnames) %>% unique(.[duplicated(.)])
+  ## Modify duplicated names n Modify names again by suffix if duplicated ####
+  snd1_names = ifelse(snd1_originalnames %in% snd3_dupnames, paste0(snd1_originalnames, ".1"), snd1_originalnames)
+  snd2_names = ifelse(snd2_originalnames %in% snd3_dupnames, paste0(snd2_originalnames, ".2"), snd2_originalnames)
+  snd3_names = snd:::getUniqueNames(name = c(snd1_names, snd2_names))
 
-  ##rename if names have overlaps####
-  duplicated_names = c(snd1_name, snd2_name)
-  duplicated_names = unique(duplicated_names[duplicated(duplicated_names)])
-  snd3_name = c(ifelse(snd1_name %in% duplicated_names, paste0(snd1_name, ".1"), snd1_name),
-                ifelse(snd2_name %in% duplicated_names, paste0(snd2_name, ".2"), snd2_name))
+  ##Get the modded names for each SND, rename####
+  snd1 = snd::rename(snd1, snd3_names[1:length(snd1_names)])
+  snd2 = snd::rename(snd2, snd3_names[(length(snd1_names)+1):length(snd3_names)])
 
-  ##bind into snd3 ####
-  snd3 = c(snd1_dataset, snd2_dataset) %>%
-    snd:::nameAs(name = snd3_name)
-  return(invisible(snd3))
+  ##Grab the OS of snd1 n snd2 ####
+  snd1_OS = unclass(snd1[sapply(X = snd1, FUN = snd::is_snd_os)][[1]])
+  snd2_OS = unclass(snd2[sapply(X = snd2, FUN = snd::is_snd_os)][[1]])
+
+  l = list(snd1_OS, snd2_OS)
+  keys = unique(unlist(lapply(l, names)))
+  snd3_OS = setNames(do.call(mapply, c(FUN=c, lapply(l, `[`, keys))), keys) %>%
+    snd:::classify_os(x = .)
+  ## Bind the snds together
+  append(x = snd::grab_sndset(snd1),
+         values = snd::grab_sndset(snd2)) %>%
+    append(values = list(snd3_OS)) %>%
+    snd:::nameAs(name = c(snd3_names, "OS")) %>%
+    snd:::classify_snd(x = .) %>%
+    invisible() %>%
+    return(.)
 }

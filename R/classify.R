@@ -43,6 +43,18 @@ classify_set = function(x){
 
 #' @keywords internal
 #' @rdname classify
+classify_snd = function(x){
+  return(snd:::classify(x, class = "snd"))
+}
+
+#' @keywords internal
+#' @rdname classify
+classify_os = function(x){
+  return(snd:::classify(x, class = "snd_os"))
+}
+
+#' @keywords internal
+#' @rdname classify
 classify_key = function(x){
   class = paste0("sndkey_", stringr::str_remove(string = x, pattern = "^[@]"))
   return(snd:::classify(x, class = class))

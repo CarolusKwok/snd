@@ -45,7 +45,8 @@ forge_xlsx = function(xlsxFile, sheet){
   #Format it accordingly ####
   data_data = mapply(FUN = snd:::formatRI_matrix,
                      mtx = data_data,
-                     mtxName = use_data)
+                     mtxName = use_data,
+                     SIMPLIFY = FALSE, USE.NAMES = FALSE)
 
   #Forge factors, Factors need @factor @label @format ####
   data_factor = lapply(X = lapply(X = data_data,
@@ -105,12 +106,15 @@ forge_xlsx = function(xlsxFile, sheet){
     data_data = data_data, data_item = data_item, data_factor = data_factor, use_data = use_data, SIMPLIFY = FALSE)
 
   #Package as SND and return ####
-  snd = mapply(FUN = function(data_item, data_data, data_factor){
+  mapply(FUN = function(data_item, data_data, data_factor){
     return(snd:::classify_set(list(factor = data_factor,
                                    item = data_item,
                                    data = data_data)))},
     data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE) %>%
-    snd:::classify(class = "snd") %>%
-    snd:::nameAs(name = stringr::str_sub(use_data, start = 7, end = -1L))
-  return(invisible(snd))
+    snd:::nameAs(name = stringr::str_sub(use_data, start = 7, end = -1L)) %>%
+    append(values = list(OS = snd:::classify_os(x = list(DIR = xlsxFile,
+                                                         createTime = Sys.time(),
+                                                         defaultMod = stringr::str_sub(use_data, start = 7, end = -1L))))) %>%
+    snd:::classify_snd() %>%
+    return(invisible(.))
 }

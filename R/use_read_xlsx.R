@@ -94,12 +94,15 @@ read_xlsx = function(xlsxFile, sheet = NULL){
     usename_data = usename_data, SIMPLIFY = FALSE)
 
   #Package as SND and return ####
-  snd = mapply(FUN = function(data_item, data_data, data_factor){
+  mapply(FUN = function(data_item, data_data, data_factor){
     return(snd:::classify_set(list(factor = data_factor,
                                    item = data_item,
                                    data = data_data)))},
     data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE) %>%
-    snd:::classify(class = "snd") %>%
-    snd:::nameAs(name = stringr::str_sub(usename_data, start = 7, end = -1L))
-  return(invisible(snd))
+    snd:::nameAs(name = stringr::str_sub(usename_data, start = 7, end = -1L)) %>%
+    append(values = list(OS = snd:::classify_os(x = list(DIR = xlsxFile,
+                                                         createTime = Sys.time(),
+                                                         defaultMod = stringr::str_sub(usename_data, start = 7, end = -1L))))) %>%
+    snd:::classify_snd() %>%
+    return(invisible(.))
 }
