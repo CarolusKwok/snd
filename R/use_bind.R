@@ -51,7 +51,7 @@ bind = function(snd1, snd2){
   append(x = snd::grab_sndset(snd1),
          values = snd::grab_sndset(snd2)) %>%
     append(values = list(snd3_OS)) %>%
-    snd:::nameAs(name = c(snd3_names, "OS")) %>%
+    setNames(nm = c(snd3_names, "OS")) %>%
     snd:::classify_snd(x = .) %>%
     invisible() %>%
     return(.)

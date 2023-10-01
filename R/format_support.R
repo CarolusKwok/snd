@@ -1,22 +1,19 @@
 #' List out all supported formats in SND
 #'
+#' @param with_abbr A logical value. If `TRUE`, returns with the alias, abbreviations, and default values for each type of data.
+#'
 #' @return A list of supported formats/ classes, in `character`
 #'
 #' @keywords internal
 #' @examples sys_format_support()
 sys_format_support = function(with_abbr = F){
-  data = tibble::tibble(type = c("full",     "alias",   "abbr", "default"),
-                        `1`  = c("POSIXct",  "time",       "t",        NA),
-                        `2`  = c("integer",  "int",        "i",       "0"),
-                        `3`  = c("numeric",  "num",        "n",       "0"),
-                        `4`  = c("logical",  "boolean",    "l",       "n"),
-                        `5`  = c("character","string",     "c",        NA)) %>%
-    tibble::column_to_rownames(var = "type") %>%
-    base::t() %>%
-    tibble::as_tibble()
-  if(!with_abbr){
-    return(data$full)
-  } else {
+  data = data.frame(full   = c("POSIXct", "integer", "numeric", "logical", "character"),
+                    alias  = c(   "time",     "int",     "num", "boolean",    "string"),
+                    abbr   = c(      "t",       "i",       "n",       "l",         "c"),
+                    default= c(       NA,       "0",       "0",       "n",          NA))
+  if(with_abbr){
     return(data)
+  } else {
+    return(data$full)
   }
 }

@@ -38,24 +38,24 @@ classify_data = function(x){
 #' @keywords internal
 #' @rdname classify
 classify_set = function(x){
-  return(snd:::classify(x, class = "snd_set"))
-}
-
-#' @keywords internal
-#' @rdname classify
-classify_snd = function(x){
-  return(snd:::classify(x, class = "snd"))
+  return(structure(.Data = x, class = "snd_set"))
 }
 
 #' @keywords internal
 #' @rdname classify
 classify_os = function(x){
-  return(snd:::classify(x, class = "snd_os"))
+  return(structure(.Data = x, class = "snd_os"))
+}
+
+#' @keywords internal
+#' @rdname classify
+classify_snd = function(x){
+  return(structure(.Data = x, class = "snd"))
 }
 
 #' @keywords internal
 #' @rdname classify
 classify_key = function(x){
-  class = paste0("sndkey_", stringr::str_remove(string = x, pattern = "^[@]"))
-  return(snd:::classify(x, class = class))
+  class = paste0("sndkey_", stringr::str_remove(string = x, pattern = "^@"))
+  return(structure(.Data = x, class = class))
 }

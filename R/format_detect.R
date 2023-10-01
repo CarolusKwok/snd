@@ -15,8 +15,10 @@ format_detect = function(column){
   formated_data = lapply(X = format,
                          FUN = snd:::formatRI_key2mtx_format_use,
                          colItem = column,
+                         colName = "format-detect",
+                         mtxName = "format-detect",
                          force = TRUE) %>%
-    snd:::nameAs(supportedFormats) %>%
+    setNames(nm = supportedFormats) %>%
     as.data.frame() %>%
     dplyr::mutate_all(is.na) %>%
     colSums()

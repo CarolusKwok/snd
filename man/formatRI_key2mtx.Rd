@@ -4,11 +4,14 @@
 \name{formatRI_key2mtx}
 \alias{formatRI_key2mtx}
 \alias{formatRI_key2mtx_format_use}
+\alias{formatRI_key2mtx_format_use2}
 \title{System tools: Checking and Formatting other matrixs using keys during read-in.}
 \usage{
 formatRI_key2mtx(key, formater, formatee, formateeName)
 
 formatRI_key2mtx_format_use(format, colItem, colName, mtxName, force = FALSE)
+
+formatRI_key2mtx_format_use2(format, colItem, colName, mtxName, force = FALSE)
 }
 \arguments{
 \item{key}{The key in \code{character}. Only 1 key will be accepted.}

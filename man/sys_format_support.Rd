@@ -6,6 +6,9 @@
 \usage{
 sys_format_support(with_abbr = F)
 }
+\arguments{
+\item{with_abbr}{A logical value. If \code{TRUE}, returns with the alias, abbreviations, and default values for each type of data.}
+}
 \value{
 A list of supported formats/ classes, in \code{character}
 }

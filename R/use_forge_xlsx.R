@@ -13,16 +13,6 @@
 #'
 #' @examples forge_xlsx(xlsxFile, sheet = NULL)
 forge_xlsx = function(xlsxFile, sheet){
-  #Custom functions ####
-  read_workbook = function(X, workbook){
-    return(openxlsx::readWorkbook(xlsxFile = workbook, sheet = X))
-  }
-  is_able = function(DATA, CLASS){
-    func = paste0("suppressWarnings(as.", CLASS, "(DATA))")
-    formated_data = eval(parse(text = func))
-    return(sum(is.na(DATA)) == sum(is.na(formated_data)))
-  }
-
   #Check ####
   if(rlang::is_missing(xlsxFile)){snd:::sys_abort_NoArg(xlsxFile)}
   ##Grab all available sheets ####
@@ -33,13 +23,13 @@ forge_xlsx = function(xlsxFile, sheet){
   use_factor = paste0("#factor", stringr::str_sub(use_data, start = 6L, end = -1L))
   use_item = paste0("#item", stringr::str_sub(use_data, start = 6L, end = -1L))
 
-  #Read in the workbook, get all available styles in the workbook n turn it into string ####
-  workbook = openxlsx::loadWorkbook(xlsxFile = xlsxFile)
-  for(i in 1:length(openxlsx::getStyles(wb = workbook))){
-    openxlsx::replaceStyle(workbook, i, newStyle = openxlsx::createStyle(numFmt = "TEXT"))
-  }
   #Start reading in the data of the above use_ list and format all the classes accordingly ####
-  data_data = lapply(X = lapply(X = use_data, FUN = read_workbook, workbook = workbook),
+  workbook = openxlsx::loadWorkbook(xlsxFile = xlsxFile)
+  newStyle = openxlsx::createStyle(numFmt = "TEXT")
+  lapply(X = 1:length(openxlsx::getStyles(wb = workbook)),
+         FUN = openxlsx::replaceStyle, wb = workbook, newStyle = newStyle)
+  data_data = lapply(X = lapply(X = use_data, FUN = openxlsx::readWorkbook,
+                                xlsxFile = workbook),
                      FUN = snd:::classify_data)
 
   #Format it accordingly ####
@@ -111,7 +101,7 @@ forge_xlsx = function(xlsxFile, sheet){
                                    item = data_item,
                                    data = data_data)))},
     data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE) %>%
-    snd:::nameAs(name = stringr::str_sub(use_data, start = 7, end = -1L)) %>%
+    setNames(nm = stringr::str_sub(use_data, start = 7, end = -1L)) %>%
     append(values = list(OS = snd:::classify_os(x = list(DIR = xlsxFile,
                                                          createTime = Sys.time(),
                                                          defaultMod = stringr::str_sub(use_data, start = 7, end = -1L))))) %>%

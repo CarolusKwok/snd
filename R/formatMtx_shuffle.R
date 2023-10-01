@@ -4,7 +4,7 @@ format_shuffle = function(mtx, mtxName){
   #Part 1: Grab the keys and sort it according to priority ####
   keys = snd:::grab_mtxKey(dataframe = mtx)
   key_priority = sapply(X = lapply(keys, FUN = snd:::classify_key), FUN = snd:::key_priority, simplify = TRUE) %>%
-    snd:::nameAs(name = keys) %>%
+    setNames(nm = keys) %>%
     sort(decreasing = TRUE)
   keys = names(key_priority)
 
@@ -14,3 +14,6 @@ format_shuffle = function(mtx, mtxName){
   #Part 3: Sort it according to relocate ####
   return(invisible(dplyr::relocate(.data = mtx, dplyr::all_of(keys), dplyr::all_of(factors))))
 }
+
+
+

@@ -88,5 +88,5 @@ rename = function(snd, ...){
                    }
                    else{return(names[[X]])}},
                  is_sndset = is_sndset, names = names, modNames = modNames)
-  return(invisible(snd:::nameAs(snd, name = names)))
+  return(invisible(setNames(object = snd, nm = names)))
 }

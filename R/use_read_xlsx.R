@@ -20,11 +20,6 @@
 #' @export
 #' @examples read_xlsx(xlsxFile, sheet = NULL)
 read_xlsx = function(xlsxFile, sheet = NULL){
-  #Internal functions ####
-  read_workbook = function(X, workbook){
-    return(openxlsx::readWorkbook(xlsxFile = workbook, sheet = X))
-  }
-
   #Check if sheets are available####
   if(!hasArg(xlsxFile)){snd:::sys_abort_NoArg(xlsxFile)}
   snd:::checkRW_xlsx(xlsxFile = xlsxFile, sheet = sheet)
@@ -44,25 +39,27 @@ read_xlsx = function(xlsxFile, sheet = NULL){
                           stringr::str_sub(usename_data, start = 6L, end = -1L)) %>%
     ifelse(. %in% ava_factor, .,
            ifelse("#factor" %in% ava_factor, "#factor", "FAIL"))
-  #Read in the workbook, get all available styles in the workbook n turn it into string ####
-  workbook = openxlsx::loadWorkbook(xlsxFile = xlsxFile)
-  newStyle = openxlsx::createStyle(numFmt = "TEXT")
-  for(i in 1:length(openxlsx::getStyles(wb = workbook))){
-    openxlsx::replaceStyle(workbook, i, newStyle = newStyle)
-  }
+
   #Find the unique matrix name for items to prevent reading in item multiple times
   usename_item_unique = unique(usename_item) %>%
-    snd:::nameAs(x = ., name = .)
+    setNames(object = ., nm = .)
 
   usename_factor_unique = unique(usename_factor) %>%
-    snd:::nameAs(x = ., name = .)
+    setNames(object = ., nm = .)
 
   #Start reading in the data of the above use_ list and format all the classes accordingly ####
-  data_data = lapply(X = lapply(X = usename_data, FUN = read_workbook, workbook = workbook),
+  workbook = openxlsx::loadWorkbook(xlsxFile = xlsxFile)
+  newStyle = openxlsx::createStyle(numFmt = "TEXT")
+  lapply(X = 1:length(openxlsx::getStyles(wb = workbook)),
+         FUN = openxlsx::replaceStyle, wb = workbook, newStyle = newStyle)
+  data_data = lapply(X = lapply(X = usename_data, FUN = openxlsx::readWorkbook,
+                                xlsxFile = workbook),
                      FUN = snd:::classify_data)
-  data_item_unique = lapply(X = lapply(X = usename_item_unique, FUN = read_workbook, workbook = workbook),
+  data_item_unique = lapply(X = lapply(X = usename_item_unique, FUN = openxlsx::readWorkbook,
+                                       xlsxFile = workbook),
                             FUN = snd:::classify_item)
-  data_factor_unique = lapply(X = lapply(X = usename_factor_unique, FUN = read_workbook, workbook = workbook),
+  data_factor_unique = lapply(X = lapply(X = usename_factor_unique, FUN = openxlsx::readWorkbook,
+                                         xlsxFile = workbook),
                               FUN = snd:::classify_factor)
 
   #Format itself accordingly ####
@@ -99,7 +96,7 @@ read_xlsx = function(xlsxFile, sheet = NULL){
                                    item = data_item,
                                    data = data_data)))},
     data_item = data_item, data_data = data_data, data_factor = data_factor, SIMPLIFY = FALSE) %>%
-    snd:::nameAs(name = stringr::str_sub(usename_data, start = 7, end = -1L)) %>%
+    setNames(nm = stringr::str_sub(usename_data, start = 7, end = -1L)) %>%
     append(values = list(OS = snd:::classify_os(x = list(DIR = xlsxFile,
                                                          createTime = Sys.time(),
                                                          defaultMod = stringr::str_sub(usename_data, start = 7, end = -1L))))) %>%
