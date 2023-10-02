@@ -24,6 +24,7 @@ OSmodify = function(snd, OSkey, value){
 
   OSkeys[[OSkey_index]] = OSkey
   snd[[OS_index]][[OSkey_index]] = value
-  names(snd[[OS_index]]) = OSkeys
+  snd[[OS_index]] = snd[[OS_index]][lengths(snd[[OS_index]]) != 0]
+  snd[[OS_index]] = snd:::classify_os(snd[[OS_index]])
   return(snd)
 }

@@ -62,7 +62,7 @@ rename = function(snd, ...){
       }
     }
   }
-  modNames = snd:::getUniqueNames(modNames)
+  modNames = make.unique(names = modNames)
 
   ##Modifying OS defaultMod ####
   defaultMod = snd:::OSgrab(snd, OSkey = "defaultMod")

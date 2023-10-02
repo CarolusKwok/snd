@@ -17,42 +17,55 @@ bind = function(snd1, snd2){
   snd:::check_snd(snd1)
   snd:::check_snd(snd2)
 
-  #Start binding ####
-  ## Find all set names in snd1 and snd2, combine to find snd3's names####
-  grabSNDSetNames = function(snd){
-    sapply(snd1, FUN = snd::is_snd_set) %>%
-      .[.] %>%
-      names %>%
-      return
-  }
+  #Start ####
+  ##Get set names ####
+  snd1_setName = names(snd1)[sapply(snd1, FUN = snd::is_snd_set)]
+  snd2_setName = names(snd2)[sapply(snd2, FUN = snd::is_snd_set)]
 
-  snd1_originalnames = grabSNDSetNames(snd = snd1)
-  snd2_originalnames = grabSNDSetNames(snd = snd2)
-  ## Find duplicated names ####
-  snd3_dupnames = c(snd1_originalnames, snd2_originalnames) %>% unique(.[duplicated(.)])
-  ## Modify duplicated names n Modify names again by suffix if duplicated ####
-  snd1_names = ifelse(snd1_originalnames %in% snd3_dupnames, paste0(snd1_originalnames, ".1"), snd1_originalnames)
-  snd2_names = ifelse(snd2_originalnames %in% snd3_dupnames, paste0(snd2_originalnames, ".2"), snd2_originalnames)
-  snd3_names = snd:::getUniqueNames(name = c(snd1_names, snd2_names))
+  ##Find duplicate names, paste suffix if set names are duplicated####
+  dup_setName = c(snd1_setName, snd2_setName)
+  dup_setName = unique(dup_setName[duplicated(dup_setName)])
+  snd1_setName = ifelse(snd1_setName %in% dup_setName, paste0(snd1_setName, ".1"), snd1_setName)
+  snd2_setName = ifelse(snd2_setName %in% dup_setName, paste0(snd2_setName, ".2"), snd2_setName)
+  ##Find duplicated names, paste additional suffix if set names duplicated ####
+  snd3_setName = make.unique(c(snd1_setName, snd2_setName))
+  snd1_setName = snd3_setName[1:length(snd1_setName)]
+  snd2_setName = snd3_setName[(length(snd1_setName)+1):length(snd3_setName)]
+  ##Rename snd1 and snd2 base on setName ####
+  snd1 = snd::rename(snd1, snd1_setName)
+  snd2 = snd::rename(snd2, snd2_setName)
 
-  ##Get the modded names for each SND, rename####
-  snd1 = snd::rename(snd1, snd3_names[1:length(snd1_names)])
-  snd2 = snd::rename(snd2, snd3_names[(length(snd1_names)+1):length(snd3_names)])
-
-  ##Grab the OS of snd1 n snd2 ####
+  ##Grab OS and bind ####
   snd1_OS = unclass(snd1[sapply(X = snd1, FUN = snd::is_snd_os)][[1]])
   snd2_OS = unclass(snd2[sapply(X = snd2, FUN = snd::is_snd_os)][[1]])
 
-  l = list(snd1_OS, snd2_OS)
-  keys = unique(unlist(lapply(l, names)))
-  snd3_OS = setNames(do.call(mapply, c(FUN=c, lapply(l, `[`, keys))), keys) %>%
-    snd:::classify_os(x = .)
-  ## Bind the snds together
-  append(x = snd::grab_sndset(snd1),
-         values = snd::grab_sndset(snd2)) %>%
+  snd1_OSkey = names(snd1_OS)
+  snd2_OSkey = names(snd2_OS)
+  snd3_OSkey = unique(c(snd1_OSkey, snd2_OSkey))
+
+  snd3_OS = setNames(object = lapply(X = snd3_OSkey, FUN = function(X){return(NULL)}),
+                     nm = snd3_OSkey)
+
+  for(i in 1:length(snd3_OS)){
+    sel_key = snd3_OSkey[[i]]
+    snd1_OSindex = match(x = sel_key, table = snd1_OSkey)
+    snd2_OSindex = match(x = sel_key, table = snd2_OSkey)
+
+    if(is.na(snd1_OSindex)){
+      snd3_OS[[i]] = snd2_OS[[snd2_OSindex]]
+    } else if(is.na(snd2_OSindex)){
+      snd3_OS[[i]] = snd1_OS[[snd1_OSindex]]
+    } else {
+      snd3_OS[[i]] = c(snd1_OS[[snd1_OSindex]], snd2_OS[[snd2_OSindex]])
+    }
+  }
+  snd3_OS = snd:::classify_os(snd3_OS)
+
+  ##Blend everything n form snd3 ####
+  snd3 = append(x = snd1[sapply(snd1, FUN = snd::is_snd_set)],
+                values = snd2[sapply(snd2, FUN = snd::is_snd_set)]) %>%
     append(values = list(snd3_OS)) %>%
-    setNames(nm = c(snd3_names, "OS")) %>%
-    snd:::classify_snd(x = .) %>%
-    invisible() %>%
-    return(.)
+    setNames(nm = c(snd3_setName, "OS")) %>%
+    snd:::classify_snd(.)
+  return(invisible(snd3))
 }
