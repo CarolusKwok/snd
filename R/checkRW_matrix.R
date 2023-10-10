@@ -12,9 +12,25 @@
 #' @rdname checkRW_matrix
 checkRW_matrix = function(mtx, mtxName){
   #Checks ####
-  if(!hasArg(mtx))(snd:::sys_abort_NoArg(mtx))
-  if(!is.data.frame(mtx)){snd:::sys_abort_mtxWrongClass(x = mtx, mtxName)}
-  if(sum(duplicated(colnames(mtx)))){snd:::sys_abort_mtxColDuplicated(x = mtx, name = mtxName)}
+  if(rlang::is_missing(mtx))(snd:::sys_abort_NoArg(mtx))
+  if(rlang::is_missing(mtxName)){snd:::sys_abort_NoArg(mtxName)}
+  if(!is.data.frame(mtx)){
+    class = class(mtx)
+    snd:::sys_abort(message = c("x" = "Wrong class for {.mtx {mtxName}}",
+                                "!" = "You've supplied {.cls {class}}",
+                                "i" = "Please use {.cls data.frame}/ {.cls tibble} for {.mtx {mtxName}}"),
+                    arg = rlang::caller_arg(arg = mtx), mtxName = mtxName, class = class)
+  }
+  if(sum(duplicated(colnames(mtx)))){
+    colnames = colnames(mtx)
+    dup_columns = stringr::str_flatten(string = paste0('{.col ', unique(colnames[duplicated(colnames)]) , '}'),
+                                       collapse = ", ")
+    snd:::sys_abort(message = c("x" = "Duplicated columns in {.mtx {mtxName}}",
+                                "i" = "Please check columns in {.mtx {mtxName}}",
+                                "i" = "Duplicated Columns:",
+                                "i" = dup_columns),
+                    mtxName = mtxName)
+    }
 
   #Start ####
   UseMethod(generic = "checkRW_matrix", object = mtx)
@@ -26,8 +42,16 @@ checkRW_matrix.snd_data = function(mtx, mtxName){
   ava_key = snd:::grab_mtxKey(mtx)
   ava_factor = snd:::grab_mtxFactor(mtx)
   ava_item = snd:::grab_mtxItem(mtx)
-  if(length(ava_factor) <= 0){snd:::sys_abort_mtxMissingFactor(x = mtx, name = mtxName)}
-  if(length(ava_item) <= 0){snd:::sys_abort_mtxMissingItem(x = mtx, name = mtxName)}
+  if(length(ava_factor) <= 0){
+    snd:::sys_abort(message = c("x" = "Missing factors in {.mtx {mtxName}}",
+                                "i" = "Please include factors in {.mtx {mtxName}}"),
+                    mtxName = mtxName)
+  }
+
+  if(length(ava_item) <= 0){
+    snd:::sys_abort(message = c("x" = "Missing items in {.mtx {mtxName}}",
+                                "i" = "Please include items in {.mtx {mtxName}}"),
+                    mtxName = mtxName)}
 }
 
 #' @export
@@ -58,10 +82,16 @@ checkRW_matrix.snd_factor = function(mtx, mtxName){
   }
 
   #Check if all columns are characters ####
-  colClass = unlist(lapply(mtx, FUN = class))
+  colClass = sapply(mtx, FUN = class, simplify = TRUE, USE.NAMES = FALSE)
   colClassTest = (colClass != "character")
-  colFailed = colnames(x = mtx)[colClassTest]
   if(sum(colClassTest)){
-    snd:::sys_abort_mtxColWrongClass(x = mtx, name = mtxName, columns = colFailed, expected = "character")
+    columns = stringr::str_flatten(paste0("{.col ", colnames(x = mtx)[colClassTest], "}"),
+                                   collapse = ", ")
+    snd:::sys_abort(message = c("x" = "Wrong class for columns in {.mtx {mtxName}}",
+                                "!" = "Columns with wrong class include:",
+                                "!" = columns,
+                                "i" = "Please use the following classes for those columns in {.mtx {mtxName}}:",
+                                "i" = "{.cls character}"),
+                    mtxName = mtxName)
   }
 }

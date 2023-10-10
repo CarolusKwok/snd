@@ -14,26 +14,20 @@
 split = function(snd, dataset = NULL){
   snd:::check_snd(snd)
 
-  #Extract start ####
-  name_set = sapply(X = snd,
-                    FUN = snd::is_snd_set, simplify = TRUE, USE.NAMES = TRUE) %>%
-    .[.] %>%
-    names
-
-  ##show warning if dataset is NULL ####
   if(is.null(dataset)){
     snd:::sys_warn(message = c("!" = "{.arg dataset} is NULL",
                                "i" = "All datasets within {.arg snd} will be extracted"))
-    dataset = name_set
+    return(invisible(snd))
   }
+  #Extract start ####
+  name_set = names(snd)[sapply(X = snd, FUN = snd::is_snd_set, simplify = TRUE, USE.NAMES = FALSE)]
 
   ##Show warning of datasets that are not in snd ####
   fail = !(dataset %in% name_set)
   if(sum(fail)){
-    custom = stringr::str_flatten(paste0("{.mtx ", dataset[fail], "}"), collapse = ", ")
     snd:::sys_warn(c("!" = "{.arg dataset} failed",
                      "!" = "{.arg dataset} can not find the following in {.arg snd}:",
-                     "i" = custom))
+                     "i" = stringr::str_flatten(paste0("{.mtx ", dataset[fail], "}"), collapse = ", ")))
   }
 
   ##Extract neccessary datasets n OS####

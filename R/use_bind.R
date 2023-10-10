@@ -43,23 +43,22 @@ bind = function(snd1, snd2){
   snd2_OSkey = names(snd2_OS)
   snd3_OSkey = unique(c(snd1_OSkey, snd2_OSkey))
 
-  snd3_OS = setNames(object = lapply(X = snd3_OSkey, FUN = function(X){return(NULL)}),
-                     nm = snd3_OSkey)
-
-  for(i in 1:length(snd3_OS)){
-    sel_key = snd3_OSkey[[i]]
-    snd1_OSindex = match(x = sel_key, table = snd1_OSkey)
-    snd2_OSindex = match(x = sel_key, table = snd2_OSkey)
-
-    if(is.na(snd1_OSindex)){
-      snd3_OS[[i]] = snd2_OS[[snd2_OSindex]]
-    } else if(is.na(snd2_OSindex)){
-      snd3_OS[[i]] = snd1_OS[[snd1_OSindex]]
-    } else {
-      snd3_OS[[i]] = c(snd1_OS[[snd1_OSindex]], snd2_OS[[snd2_OSindex]])
-    }
-  }
-  snd3_OS = snd:::classify_os(snd3_OS)
+  snd3_OS = setNames(object = lapply(X = snd3_OSkey,
+                                     FUN = function(X, snd1_OSkey, snd1_OS, snd2_OSkey, snd2_OS){
+                                       snd1_OSindex = match(x = X, table = snd1_OSkey)
+                                       snd2_OSindex = match(x = X, table = snd2_OSkey)
+                                       if(is.na(snd1_OSindex)){
+                                         return(snd2_OS[[snd2_OSindex]])
+                                       } else if(is.na(snd2_OSindex)){
+                                         return(snd1_OS[[snd1_OSindex]])
+                                       } else {
+                                         return(c(snd1_OS[[snd1_OSindex]], snd2_OS[[snd2_OSindex]]))
+                                       }
+                                     },
+                                     snd1_OSkey = snd1_OSkey, snd1_OS = snd1_OS,
+                                     snd2_OSkey = snd2_OSkey, snd2_OS = snd2_OS),
+                     snd3_OSkey) %>%
+    snd:::classify_os(.)
 
   ##Blend everything n form snd3 ####
   snd3 = append(x = snd1[sapply(snd1, FUN = snd::is_snd_set)],

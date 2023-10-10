@@ -38,9 +38,10 @@ formatRI_key2mtx.sndkey_factor = function(key, formater, formatee, formateeName)
   test = !(use_factor %in% unique(formater$`@factor`))
   if(sum(test)){
     fail = use_factor[test]
-    snd:::sys_abort_mtxMissingSelectedFactor(x = formatee,
-                                             factor_missing = fail,
-                                             name = formateeName)
+    snd:::sys_abort(message = c("x" = "Missing factors in {.mtx {formateeName}}",
+                                "i" = "Please include factors in {.mtx {formateeName}}",
+                                "i" = "factors missing: {.col {fail}}"),
+                    formateeName = formateeName, fail = fail)
   }
   #Return ####
   return(formatee)
@@ -53,9 +54,10 @@ formatRI_key2mtx.sndkey_item = function(key, formater, formatee, formateeName){
   test = !(use_item %in% unique(formater$`@item`))
   if(sum(test)){
     fail = use_item[test]
-    snd:::sys_abort_mtxMissingSelectedItem(x = formatee,
-                                           item_missing = fail,
-                                           name = formateeName)
+    snd:::sys_abort(message = c("x" = "Missing items in {.mtx {formateeName}}",
+                                "i" = "Please include items in {.mtx {formateeName}}",
+                                "i" = "items missing: {.col {fail}}"),
+                    formateeName = formateeName, fail = fail, arg = rlang::caller_arg(formatee))
   }
   #Return ####
   return(formatee)
@@ -200,9 +202,12 @@ formatRI_key2mtx_sndkey_label.snd_factor = function(key, formater, formatee, for
   factorName = factorName, format = format, label = label, factorData = factorData, supportedFormat = supportedFormat,
   SIMPLIFY = TRUE, USE.NAMES = FALSE)
   if(sum(test)){
-    snd:::sys_abort_mtxKeyLabelIncorrectlyDescribeData(x = formatee,
-                                                       name = formateeName,
-                                                       failed_columns = factorName[test])
+    failed_columns = stringr::str_flatten(string = paste0("{.col ", factorName[test], "}"), collapse = ", ")
+    snd:::sys_abort(message = c("x" = "Describing columns incorrectly in {.mtx {formateeName}} using {.col @label}",
+                                "!" = "Incorrectly described columns:",
+                                "!" = failed_columns,
+                                "i" = "Please check {.mtx {formateeName}}"),
+                    formateeName = formateeName)
   }
   #Return if OK
   return(formatee)
@@ -255,9 +260,13 @@ formatRI_key2mtx_sndkey_label.snd_item = function(key, formater, formatee, forma
                 itemName = itemName, format = format, label = label, itemData = itemData, supportedFormat = supportedFormat,
                 SIMPLIFY = TRUE, USE.NAMES = FALSE)
   if(sum(test)){
-    snd:::sys_abort_mtxKeyLabelIncorrectlyDescribeData(x = formatee,
-                                                       name = formateeName,
-                                                       failed_columns = itemName[test])
+    failed_columns = stringr::str_flatten(string = paste0("{.col ", itemName[test], "}"), collapse = ", ")
+
+    snd:::sys_abort(message = c("x" = "Describing columns incorrectly in {.mtx {formateeName}} using {.col @label}",
+                                "!" = "Incorrectly described columns:",
+                                "!" = failed_columns,
+                                "i" = "Please check {.mtx {formateeName}}"),
+                    formateeName = formateeName)
   }
   #Return if OK
   return(formatee)

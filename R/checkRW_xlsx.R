@@ -28,9 +28,9 @@ checkRW_xlsx = function(xlsxFile, sheet = NULL){
     }
     if(sum(duplicated(sheet))){
       sheet = unique(sheet)
-      custom =  stringr::str_flatten(string = paste0("{.code ", sheet, "}"), collapse = ", ")
+      custom = stringr::str_flatten(string = paste0("{.code ", sheet, "}"), collapse = ", ")
       snd:::sys_warn(message = c("!" = "Duplicated items found in {.arg {arg}}",
-                                 "i" = "{.arg {arg}} changed to following",
+                                 "i" = "{.arg {arg}} changed to following:",
                                  "i" = custom),
                      x = sheet)
     }
@@ -39,8 +39,13 @@ checkRW_xlsx = function(xlsxFile, sheet = NULL){
   ##Check if arg `sheet` are present in file as data sheets####
   data_availability = (sheet %in% ava_data)
   if(sum(!data_availability)){
-    data_name = sheet[!data_availability]
-    snd:::sys_abort_shtUnavailable(x = xlsxFile, unavailable_sheets = data_name)
+    unava_data_name = stringr::str_flatten(string = paste0("{.code ", sheet[!data_availability], "}"),
+                                           collapse = ", ")
+    snd:::sys_abort(message = c("x" = "Sheet unavailable in {.arg {arg}}",
+                                "i" = "Please check if following sheets are available in {.arg {arg}}",
+                                "i" = "Sheets not found in {.arg {arg}}:",
+                                "i" = unava_data_name),
+                    arg = rlang::caller_arg(arg = xlsxFile))
   }
 
   ##Check if the data sheets have a corresponding factor sheet ####
@@ -48,10 +53,15 @@ checkRW_xlsx = function(xlsxFile, sheet = NULL){
     x = paste0("#factor", stringr::str_sub(string = x, start = 6L, end = -1L))
     return((x %in% factor) | ("#factor" %in% factor))
   }
-  factor_availability = unlist(lapply(X = sheet, FUN = check_factor, factor = ava_factor))
+  factor_availability = sapply(X = sheet, FUN = check_factor, factor = ava_factor, simplify = TRUE, USE.NAMES = FALSE)
   if(sum(!factor_availability)){
-    factor_name = paste0("#factor", stringr::str_sub(string = sheet[!factor_availability], start = 6L, end = -1L))
-    snd:::sys_abort_shtUnavailable(x = xlsxFile, unavailable_sheets = factor_name)
+    unava_factor_name = stringr::str_flatten(string = paste0("{.code ", sheet[!factor_availability], "}"),
+                                             collapse = ", ")
+    snd:::sys_abort(message = c("x" = "Factor sheet unavailable in {.arg {arg}}",
+                                "i" = "Please check if following sheets are available in {.arg {arg}}",
+                                "i" = "Sheets not found in {.arg {arg}}:",
+                                "i" = unava_factor_name),
+                    arg = rlang::caller_arg(arg = xlsxFile))
   }
 
   ##Check if the data sheets have a corresponding item sheet####
@@ -59,9 +69,14 @@ checkRW_xlsx = function(xlsxFile, sheet = NULL){
     x = paste0("#item", stringr::str_sub(string = x, start = 6L, end = -1L))
     return((x %in% item) | ("#item" %in% item))
   }
-  item_availability = unlist(lapply(X = sheet, FUN = check_item, item = ava_item))
+  item_availability = sapply(X = sheet, FUN = check_item, item = ava_item, simplify = TRUE, USE.NAMES = FALSE)
   if(sum(!item_availability)){
-    item_name = paste0("#item", stringr::str_sub(string = sheet[!item_availability], start = 6L, end = -1L))
-    snd:::sys_abort_shtUnavailable(x = xlsxFile, unavailable_sheets = item_name)
+    unava_item_name = stringr::str_flatten(string = paste0("{.code ", sheet[!item_availability], "}"),
+                                             collapse = ", ")
+    snd:::sys_abort(message = c("x" = "Item sheet unavailable in {.arg {arg}}",
+                                "i" = "Please check if following sheets are available in {.arg {arg}}",
+                                "i" = "Sheets not found in {.arg {arg}}:",
+                                "i" = unava_item_name),
+                    arg = rlang::caller_arg(arg = xlsxFile))
   }
 }
