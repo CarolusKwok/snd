@@ -10,7 +10,7 @@ check_snd(snd)
 \item{snd}{an SND}
 }
 \value{
-a standard abort message (if applicable)
+a standard message (if applicable)
 }
 \description{
 A SND has a standard, fixed structure, which includes the following.
@@ -21,21 +21,22 @@ A SND has a standard, fixed structure, which includes the following.
 \item ...
 \item OS
 }
-}
-\details{
+
 which a dataset includes
 \itemize{
-\item snd_factor (named factor)
-\item snd_item (named item)
-\item data (named data)
+\item snd_factor (named \code{factor})
+\item snd_item (named \code{item})
+\item data (named \code{data})
 }
 
 This function checks the structure of the SND and display a warning/ abort if...
 \itemize{
 \item There is no datasets (Part 1, warning only)
-\item There is no factor (Part 2)
-\item There is no item (Part 3)
-\item There is no data (Part 4)
+\item Names are duplicated between datasets (Part 2)
+\item There is no factor (Part 3)
+\item There is no item (Part 4)
+\item There is no data (Part 5)
+\item There is no OS (Part 6)
 }
 }
 \keyword{internal}

@@ -5,14 +5,16 @@
 #'
 #' @param key The key in `character`. Only 1 key will be accepted.
 #' @param mtx The matrix in `data.frame`. The matrix must contain the key.
-#' @param mtxName The name of the matrix in character.
+#' @param mtxName The name of the `mtx` in character.
 #'
 #' @return A matrix, checked (or/and modified) by the key.
 #' @keywords internal
+#' @examples
 formatRI_key = function(key, mtx, mtxName){
   #Check ####
   if(rlang::is_missing(key)){snd:::sys_abort_NoArg(key)}
   if(rlang::is_missing(mtx)){snd:::sys_abort_NoArg(mtx)}
+  if(rlang::is_missing(mtxName)){snd:::sys_abort_NoArg(mtxName)}
   if(length(key) != 1){snd:::sys_abort_WrongLength(x = key, length = 1L)}
   if(!(key %in% snd::grab_mtxKey(mtx))){
     snd:::sys_abort_mtxMissingSelectedKey(x = mtx, keys_missing = key, name = mtxName)
@@ -23,304 +25,30 @@ formatRI_key = function(key, mtx, mtxName){
 }
 
 #' @export
+formatRI_key.default = function(key, mtx, mtxName){
+  snd:::sys_warn(message = c("!" = "Key not supported",
+                             "i" = "Key {.col key} in {.mtx {mtxName}} is not supported",
+                             "i" = "key {.col key} is skipped"),
+                 key = key, mtxName = mtxName)
+  return(mtx)
+}
+
+#' @export
 formatRI_key.sndkey_type = function(key, mtx, mtxName){
   #Check if @type is of the following classes.
   #If not, type it as "error"
-  keyType_CorrectTest = mtx$`@type` %in% c("data", "calc", "stat")
-  if(sum(!keyType_CorrectTest)){
+  support = c("data", "calc", "stat")
+  test = !(mtx$`@type` %in% support)
+  if(sum(test)){
     mtx = dplyr::mutate(.data = mtx,
-                        `@type` = ifelse(!keyType_CorrectTest, "error", `@type`))
-    if(rlang::is_missing(mtxName)){
-      snd:::sys_warn(message = c("!" = "Include incorrect {.col @type} in {.arg {arg}}",
-                                 "i" = "All incorrect types are changed to {.code error}"),
-                     x = mtx)
-    } else {
-      snd:::sys_warn(message = c("!" = "Include incorrect {.col @type} in {.mtx {mtxName}}",
-                                 "i" = "All incorrect types are changed to {.code error}"),
-                     x = mtx, mtxName = mtxName)
-    }
+                        `@type` = ifelse(test, "error", `@type`))
+    snd:::sys_warn(message = c("!" = "Incorrect {.col @type} in {.mtx {mtxName}}",
+                               "i" = "Supported {.col @type}:",
+                               "i" = snd:::sys_message_code(code = support),
+                               "i" = "Failed {.col @type}:",
+                               "i" = snd:::sys_message_code(code = (mtx$`@type`)[test]),
+                               "!" = "All incorrect types are changed to {.code error}"),
+                   mtxName = mtxName)
   }
-  return(invisible(mtx))
-}
-
-#' @export
-formatRI_key.sndkey_factor = function(key, mtx, mtxName){
-  #Check if @factor is all filled or not
-  keyFactor = mtx$`@factor`
-  if(sum(is.na(keyFactor) | keyFactor == "#NA")){
-    snd:::sys_abort(message = c("x" = "Some columns in {.mtx {mtxName}} are not filled",
-                                "!" = "Please correct the following columns:",
-                                "!" = "{.col @factor}"),
-                    mtxName = mtxName)
-  }
-  #Check if @item is a factor or not
-  if(sum(!stringr::str_detect(string = keyFactor, pattern = "^#"))){
-    snd:::sys_abort(message = c("x" = "{.mtx {mtxName}} contain factors in columns",
-                                "!" = "Please correct the following columns:",
-                                "!" = "{.col @factor}"),
-                    mtxName = mtxName)
-  }
-  return(invisible(mtx))
-}
-
-#' @export
-formatRI_key.sndkey_item = function(key, mtx, mtxName){
-  #Check if @item is filled or not
-  keyItem = mtx$`@item`
-  if(sum(is.na(keyItem) | keyItem == "#NA")){
-    snd:::sys_abort(message = c("x" = "Some columns in {.mtx {mtxName}} are not filled",
-                                "!" = "Please correct the following columns:",
-                                "!" = "{.col @item}"),
-                    mtxName = mtxName)
-  }
-  #Check if @item is a factor or not
-  if(sum(stringr::str_detect(string = keyItem, pattern = "^#"))){
-    snd:::sys_abort(message = c("x" = "{.mtx {mtxName}} contain factors in columns",
-                                "!" = "Please correct the following columns:",
-                                "!" = "{.col @item}"),
-                    mtxName = mtxName)
-  }
-  return(invisible(mtx))
-}
-
-#' @export
-formatRI_key.sndkey_format = function(key, mtx, mtxName){
-  UseMethod(generic = "formatRI_key.sndkey_format", object = mtx)
-}
-
-#' @export
-formatRI_key.sndkey_format.snd_factor = function(key, mtx, mtxName){
-  #Check 0, mtx contains @factor ####
-  if(!("@factor" %in% colnames(mtx))){snd:::sys_abort_mtxMissingSelectedKey(x = mtx,
-                                                                            keys_missing = "@factor",
-                                                                            name = mtxName)}
-  #Try to format everything ####
-  sys_format = snd:::sys_format_support(with_abbr = TRUE)
-  formated_dt = tibble::tibble(element = mtx$`@factor`,
-                               DT = mtx$`@format`) %>%
-    dplyr::mutate(prefix = snd::grab_keyPrefix(mtx = mtx, key = "@format"),
-                  head = snd::grab_keyHead(mtx = mtx, key = "@format"),
-                  head = ifelse(is.na(head), "character", head),
-                  tail = snd::grab_keyTail(mtx = mtx, key = "@format"),
-                  head = snd:::grab_keyHead(mtx = mtx, key = "@format"),
-                  match_abbr = match(x = head, table = sys_format$abbr),
-                  match_abbr = ifelse(is.na(match_abbr), 0, match_abbr),
-
-                  match_alias = match(x = head, table = sys_format$alias),
-                  match_alias = ifelse(is.na(match_alias), 0, match_alias),
-
-                  match_full = match(x = head, table = sys_format$full),
-                  match_full = ifelse(is.na(match_full), 0, match_full),
-                  match = match_abbr + match_alias + match_full,
-                  full = ifelse(match == 0, NA, sys_format$full[match]),
-                  fullname_prefix = ifelse(is.na(prefix), full, paste0(prefix, full)),
-                  fullname_tail = ifelse(is.na(tail), fullname_prefix, paste0(fullname_prefix, "_", tail)))
-  #Check 1, No match ####
-  if(sum(formated_dt$match == 0)){
-    unsupport_format = stringr::str_flatten(string = paste0('{.code ',
-                                                            unique(dplyr::filter(.data = formated_dt, match == 0)$DT),
-                                                            '}'),
-                                            collapse = ", ")
-    custom_message = stringr::str_flatten(paste0('{.code ', snd:::sys_format_support(), '}'), collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Unsupported format in {.mtx {mtxName}}",
-                                "!" = "Unsupported format include",
-                                "!" = unsupport_format,
-                                "i" = "Please specify supported format in {.col @format}",
-                                "i" = "Supported format include following:",
-                                "i" = custom_message),
-                    mtxName = mtxName)
-  }
-  #Check 2, Full name inconsistent with @factor ####
-  unique_element = unique(formated_dt$element)
-  mtx_seperated = lapply(X = unique_element,
-                         FUN = function(X, df){return(dplyr::filter(.data = df, element == X))},
-                         df = formated_dt)
-  test = unlist(lapply(X = mtx_seperated, FUN = function(X){return(length(unique(X$fullname_prefix)) == 1)}))
-  if(sum(!test)){
-    failed_groups = stringr::str_flatten(paste0("{.col ", unique_element[!test], "}"), collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Inconsistent items in {.mtx {mtxName}} columns, when grouped",
-                                "!" = "Please check in the following column:",
-                                "!" = "{.col @format}",
-                                "i" = "Grouped by:",
-                                "i" = "{.col @factor}",
-                                "i" = "Abnormal groups include:",
-                                "i" = failed_groups),
-                    mtxName = mtxName)
-  }
-  #Return ####
-  mtx = dplyr::mutate(.data = mtx, `@format` := formated_dt$fullname_tail)
-  return(invisible(mtx))
-}
-
-#' @export
-formatRI_key.sndkey_format.snd_item = function(key, mtx, mtxName){
-  #Check 0, mtx contains @item ####
-  if(!("@item" %in% colnames(mtx))){snd:::sys_abort_mtxMissingSelectedKey(x = mtx,
-                                                                          keys_missing = "@item",
-                                                                          name = mtxName)}
-  #Try to format everything ####
-  sys_format = snd:::sys_format_support(with_abbr = TRUE)
-  formated_dt = tibble::tibble(element = mtx$`@item`,
-                               DT = mtx$`@format`) %>%
-    dplyr::mutate(prefix = snd::grab_keyPrefix(mtx = mtx, key = "@format"),
-                  head = snd::grab_keyHead(mtx = mtx, key = "@format"),
-                  head = ifelse(is.na(head), "character", head),
-                  tail = snd::grab_keyTail(mtx = mtx, key = "@format"),
-                  head = snd:::grab_keyHead(mtx = mtx, key = "@format"),
-                  match_abbr = match(x = head, table = sys_format$abbr),
-                  match_abbr = ifelse(is.na(match_abbr), 0, match_abbr),
-
-                  match_alias = match(x = head, table = sys_format$alias),
-                  match_alias = ifelse(is.na(match_alias), 0, match_alias),
-
-                  match_full = match(x = head, table = sys_format$full),
-                  match_full = ifelse(is.na(match_full), 0, match_full),
-                  match = match_abbr + match_alias + match_full,
-                  full = ifelse(match == 0, NA, sys_format$full[match]),
-                  fullname_prefix = ifelse(is.na(prefix), full, paste0(prefix, full)),
-                  fullname_tail = ifelse(is.na(tail), fullname_prefix, paste0(fullname_prefix, "_", tail)))
-  #Check 1, No match ####
-  if(sum(formated_dt$match == 0)){
-    unsupport_format = stringr::str_flatten(string = paste0('{.code ',
-                                                            unique(dplyr::filter(.data = formated_dt, match == 0)$DT),
-                                                            '}'),
-                                            collapse = ", ")
-    custom_message = stringr::str_flatten(paste0('{.code ', snd:::sys_format_support(), '}'), collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Unsupported format in {.mtx {mtxName}}",
-                                "!" = "Unsupported format include",
-                                "!" = unsupport_format,
-                                "i" = "Please specify supported format in {.col @format}",
-                                "i" = "Supported format include following:",
-                                "i" = custom_message),
-                    mtxName = mtxName)
-  }
-  #Check 2, Full name inconsistent with @factor ####
-  unique_element = unique(formated_dt$element)
-  mtx_seperated = lapply(X = unique_element,
-                         FUN = function(X, df){return(dplyr::filter(.data = df, element == X))},
-                         df = formated_dt)
-  test = unlist(lapply(X = mtx_seperated, FUN = function(X){return(length(unique(X$fullname_prefix)) == 1)}))
-  if(sum(!test)){
-    failed_groups = stringr::str_flatten(paste0("{.col ", unique_element[!test], "}"), collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Inconsistent items in {.mtx {mtxName}} columns, when grouped",
-                                "!" = "Please check in the following column:",
-                                "!" = "{.col @format}",
-                                "i" = "Grouped by:",
-                                "i" = "{.col @item}",
-                                "i" = "Abnormal groups include:",
-                                "i" = failed_groups),
-                    mtxName = mtxName)
-  }
-  #Return ####
-  mtx = dplyr::mutate(.data = mtx, `@format` := formated_dt$fullname_tail)
-  return(invisible(mtx))
-}
-
-#' @export
-formatRI_key.sndkey_label = function(key, mtx, mtxName){
-  UseMethod(generic = "formatRI_key.sndkey_label", object = mtx)
-}
-
-#' @export
-formatRI_key.sndkey_label.snd_factor = function(key, mtx, mtxName){
-  colnames = colnames(mtx)
-  #Checkpoint 1: Check if the matrix contains @factor/ @item
-  if(!("@factor" %in% colnames)){snd:::sys_abort_mtxMissingSelectedKey(x = mtx, keys_missing = "@factor", name = mtxName)}
-  #Checkpoint 2: separate the matrix by @factor, check if @label has repetitive items
-  unique_factor = unique(mtx$`@factor`)
-  seperated_matrix = lapply(X = unique_factor,
-                            FUN = function(X, mtx){return(dplyr::filter(.data = mtx, `@factor` == X))},
-                            mtx = mtx)
-  test_duplicate = sapply(X = seperated_matrix, FUN = function(X){return(as.logical(sum(duplicated(X$`@label`))))},
-                          simplify = TRUE, USE.NAMES = FALSE)
-
-  if(sum(test_duplicate)){
-    failed_groups = stringr::str_flatten(paste0("{.col ", unique_factor[test_duplicate], "}"), collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Non-unique items in {.mtx {mtxName}} columns, when grouped",
-                                "!" = "Please check in the following column:",
-                                "!" = "{.col @label}",
-                                "i" = "Grouped by:",
-                                "i" = "{.col @factor}",
-                                "i" = "Abnormal groups include:",
-                                "i" = failed_groups),
-                    mtxName = mtxName)
-  }
-  #Checkpoint 3: check if ### is included with other labels
-  test_hash = sapply(X = seperated_matrix, FUN = function(X){return("###" %in% X$`@label`)}, simplify = TRUE, USE.NAMES = FALSE)
-  test_nrow = sapply(X = seperated_matrix, FUN = function(X){return(nrow(X) > 1)}, simplify = TRUE, USE.NAMES = FALSE)
-  test_binded = test_hash & test_nrow
-
-  if(sum(test_binded)){
-    failed_groups = stringr::str_flatten(paste0("{.col ", unique_factor[test_binded], "}"), collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Exclusive items in {.mtx {mtxName}} columns, when grouped",
-                                "!" = "Please check in the following column:",
-                                "!" = "{.col @label}",
-                                "i" = "Grouped by:",
-                                "i" = "{.col @factor}",
-                                "i" = "Abnormal groups include:",
-                                "i" = failed_groups,
-                                "i" = "Exclusive item include:",
-                                "i" = "###"),
-                    mtxName = mtxName)
-  }
-
-  #Checkpoint 4: Turn #NA into actually NA ####
-  mtx = dplyr::mutate(.data = mtx,
-                      `@label` = ifelse(`@label` == "#NA", NA, `@label`))
-
-  #Return ####
-  return(invisible(mtx))
-}
-
-#' @export
-formatRI_key.sndkey_label.snd_item = function(key, mtx, mtxName){
-  colnames = colnames(mtx)
-  #Checkpoint 1: Check if the matrix contains @factor/ @item
-  if(!("@item" %in% colname)){snd:::sys_abort_mtxMissingSelectedKey(x = mtx, keys_missing = "@item", name = mtxName)}
-  #Checkpoint 2: separate the matrix by @factor, check if @label has repetitive items
-  unique_item = unique(mtx$`@item`)
-  seperated_matrix = lapply(X = unique_item,
-                            FUN = function(X, mtx){return(dplyr::filter(.data = mtx, `@item` == X))},
-                            mtx = mtx)
-  test_duplicate = sapply(X = seperated_matrix, FUN = function(X){return(as.logical(sum(duplicated(X$`@label`))))},
-                          simplify = TRUE, USE.NAMES = FALSE)
-
-  if(sum(test_duplicate)){
-    failed_groups = stringr::str_flatten(paste0("{.col ", unique_item[test_duplicate], "}"), collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Non-unique items in {.mtx {mtxName}} columns, when grouped",
-                                "!" = "Please check in the following column:",
-                                "!" = "{.col @label}",
-                                "i" = "Grouped by:",
-                                "i" = "{.col @item}",
-                                "i" = "Abnormal groups include:",
-                                "i" = failed_groups),
-                    mtxName = mtxName)
-  }
-  #Checkpoint 3: check if ### is included with other labels
-  test_hash = sapply(X = seperated_matrix, FUN = function(X){return("###" %in% X$`@label`)},
-                     simplify = TRUE, USE.NAMES = FALSE)
-  test_nrow = sapply(X = seperated_matrix, FUN = function(X){return(nrow(X) > 1)},
-                     simplify = TRUE, USE.NAMES = FALSE)
-  test_binded = test_hash & test_nrow
-
-  if(sum(test_binded)){
-    failed_groups = stringr::str_flatten(paste0("{.col ", unique_factor[test_binded], "}"), collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Exclusive items in {.mtx {mtxName}} columns, when grouped",
-                                "!" = "Please check in the following column:",
-                                "!" = "{.col @label}",
-                                "i" = "Grouped by:",
-                                "i" = "{.col @item}",
-                                "i" = "Abnormal groups include:",
-                                "i" = failed_groups,
-                                "i" = "Exclusive item include:",
-                                "i" = "###"),
-                    mtxName = mtxName)
-  }
-
-  #Checkpoint 4: Turn #NA into actually NA ####
-  mtx = dplyr::mutate(.data = mtx,
-                      `@label` = ifelse(`@label` == "#NA", NA, `@label`))
-
-  #Return ####
-  return(invisible(mtx))
+  return(mtx)
 }

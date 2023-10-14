@@ -9,15 +9,12 @@ checkRW_xlsx(xlsxFile, sheet = NULL)
 \arguments{
 \item{xlsxFile}{Directory of the .xlsx file}
 
-\item{sheet}{Name of sheets to be read it, in \code{character}. Note that only sheets containing data needs to be specified. By default (\code{NULL}), all available data will be read.}
+\item{sheet}{Name of sheets to be read it, in \code{character}. Note that only sheets containing data needs to be specified (e.g. \code{"#data_eco"}). By default (\code{NULL}), all available data will be read.}
 }
 \value{
 A message or not
 }
 \description{
 SND requires a organized 2D data structure to represent multivariant data. Additionally, it requires some way that users can easily access and modify the data, even without using R. This function below checks if the .xlsx file is "well-structured", with sheets that describes the datas with factor and items.
-}
-\examples{
-checkRW_xlsx(xlsxFile = DIR)
 }
 \keyword{internal}

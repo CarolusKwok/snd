@@ -19,14 +19,19 @@
 #' @keywords internal
 #'
 #' @examples sys_abort(message = "test")
-sys_abort = function(message,
-                         x,
-                         arg = rlang::caller_arg(x),
-                         ...){
+sys_abort = function(message, x, arg = rlang::caller_arg(x), ...){
   #Custom message class####
-  cli::cli_div(theme = list(span.na = list("color" = "red", "before" = "#", "after" = "#"),
-                            span.mtx = list("color" = "blue",   "text-decoration" = "underline"),
-                            span.col = list("color" = "orange", "text-decoration" = "underline")))
+  cli::cli_div(theme = list(span.na = list("color" = "red", "before" = "#"),
+                            span.mtx = list("color" = "blue",
+                                            "before" = "'", "after" = "'",
+                                            "text-decoration" = "underline"),
+                            span.col = list("color" = "orange",
+                                            "text-decoration" = "underline"),
+                            span.sheet = list("color" = "purple",
+                                              "text-decoration" = "underline"),
+                            span.set = list("color" = "aquamarine3",
+                                            "before" = "'", "after" = "'",
+                                            "text-decoration" = "underline")))
 
   #Pass add to the environment
   list2env(x = list(...), envir = rlang::current_env())

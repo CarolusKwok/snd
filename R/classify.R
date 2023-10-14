@@ -12,8 +12,10 @@
 #'
 #' @examples classify(X, "snd_data")
 classify = function(x, class){
-  class(x) = c(class, class(x))
-  return(x)
+  if(rlang::is_missing(x)){snd:::sys_abort_NoArg(x)}
+  if(rlang::is_missing(class)){snd:::sys_abort_NoArg(class)}
+
+  return(structure(.Data = x, class = c(class, class(x))))
 }
 
 #' @keywords internal
@@ -38,24 +40,28 @@ classify_data = function(x){
 #' @keywords internal
 #' @rdname classify
 classify_set = function(x){
+  if(rlang::is_missing(x)){snd:::sys_abort_NoArg(x)}
   return(structure(.Data = x, class = "snd_set"))
 }
 
 #' @keywords internal
 #' @rdname classify
 classify_os = function(x){
+  if(rlang::is_missing(x)){snd:::sys_abort_NoArg(x)}
   return(structure(.Data = x, class = "snd_os"))
 }
 
 #' @keywords internal
 #' @rdname classify
 classify_snd = function(x){
+  if(rlang::is_missing(x)){snd:::sys_abort_NoArg(x)}
   return(structure(.Data = x, class = "snd"))
 }
 
 #' @keywords internal
 #' @rdname classify
 classify_key = function(x){
+  if(rlang::is_missing(x)){snd:::sys_abort_NoArg(x)}
   class = paste0("sndkey_", stringr::str_remove(string = x, pattern = "^@"))
   return(structure(.Data = x, class = class))
 }

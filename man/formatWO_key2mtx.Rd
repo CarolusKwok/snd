@@ -3,10 +3,28 @@
 %   R/formatWO_key2mtx_format_use.R
 \name{formatWO_key2mtx}
 \alias{formatWO_key2mtx}
+\alias{formatWO_key2mtx_sndkey_format}
+\alias{formatWO_key2mtx_sndkey_label}
 \alias{formatWO_key2mtx_format_use}
 \title{Title}
 \usage{
 formatWO_key2mtx(key, formater, formatee, formaterName, formateeName)
+
+formatWO_key2mtx_sndkey_format(
+  key,
+  formater,
+  formatee,
+  formaterName,
+  formateeName
+)
+
+formatWO_key2mtx_sndkey_label(
+  key,
+  formater,
+  formatee,
+  formaterName,
+  formateeName
+)
 
 formatWO_key2mtx_format_use(format, colItem, colName, mtxName, force = FALSE)
 }

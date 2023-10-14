@@ -2,7 +2,7 @@
 % Please edit documentation in R/checkFile_xlsx.R
 \name{checkFile_xlsx}
 \alias{checkFile_xlsx}
-\title{System tools: Check if a file exists}
+\title{System tools: Check if a \code{.xlsx} file exists}
 \usage{
 checkFile_xlsx(xlsxFile)
 }
@@ -10,12 +10,9 @@ checkFile_xlsx(xlsxFile)
 \item{xlsxFile}{Directory of the xlsxFile}
 }
 \value{
-A standard message
+a standard message (if applicable)
 }
 \description{
-It checks if a file directory is \code{character(0)}, not existing, or has incorrect extensions
-}
-\examples{
-checkFile_xlsx(xlsxFile)
+\code{snd} can be stored within the computer as a \code{.xlsx} file. This function checks if the file directory provided is \code{character(0)}, not existing, or has incorrect extensions (i.e. not \code{.xlsx}).
 }
 \keyword{internal}

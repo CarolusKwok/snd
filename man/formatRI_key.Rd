@@ -11,7 +11,7 @@ formatRI_key(key, mtx, mtxName)
 
 \item{mtx}{The matrix in \code{data.frame}. The matrix must contain the key.}
 
-\item{mtxName}{The name of the matrix in character.}
+\item{mtxName}{The name of the \code{mtx} in character.}
 }
 \value{
 A matrix, checked (or/and modified) by the key.

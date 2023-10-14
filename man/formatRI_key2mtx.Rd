@@ -3,11 +3,29 @@
 %   R/formatRI_key2mtx_format_use.R
 \name{formatRI_key2mtx}
 \alias{formatRI_key2mtx}
+\alias{formatRI_key2mtx_sndkey_format}
+\alias{formatRI_key2mtx_sndkey_label}
 \alias{formatRI_key2mtx_format_use}
 \alias{formatRI_key2mtx_format_use2}
 \title{System tools: Checking and Formatting other matrixs using keys during read-in.}
 \usage{
-formatRI_key2mtx(key, formater, formatee, formateeName)
+formatRI_key2mtx(key, formater, formatee, formaterName, formateeName)
+
+formatRI_key2mtx_sndkey_format(
+  key,
+  formater,
+  formatee,
+  formaterName,
+  formateeName
+)
+
+formatRI_key2mtx_sndkey_label(
+  key,
+  formater,
+  formatee,
+  formaterName,
+  formateeName
+)
 
 formatRI_key2mtx_format_use(format, colItem, colName, mtxName, force = FALSE)
 
@@ -28,4 +46,5 @@ The formatee matrix, checked (and formatted) by formater matrix.
 \description{
 In SND, a \code{key} is a column within the matrix that can be used to check and modify itself, it's matrix and other matrices. This function uses a key within \code{formater}, to checks and modifies another matrix \code{formatee}, using a key. To modify it's own matrix, check the function \code{snd:::formatRI_key}. To enhance security, only 1 key will be accepted.
 }
+\keyword{Internal}
 \keyword{internal}

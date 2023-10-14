@@ -5,21 +5,24 @@
 #' SND requires a organized 2D data structure to represent multivariant data. Additionally, it requires some way that users can easily access and modify the data, even without using R. This function below checks if the .xlsx file is "well-structured", with sheets that describes the datas with factor and items.
 #'
 #' @param xlsxFile Directory of the .xlsx file
-#' @param sheet Name of sheets to be read it, in `character`. Note that only sheets containing data needs to be specified. By default (`NULL`), all available data will be read.
+#' @param sheet Name of sheets to be read it, in `character`. Note that only sheets containing data needs to be specified (e.g. `"#data_eco"`). By default (`NULL`), all available data will be read.
 #'
 #' @return A message or not
 #' @keywords internal
 #'
-#' @examples checkRW_xlsx(xlsxFile = DIR)
+#' @examples
 checkRW_xlsx = function(xlsxFile, sheet = NULL){
-  #Input check ####
-  if(!hasArg(xlsxFile)){snd:::sys_abort_NoArg(x = xlsxFile)}
+  #0. Input check ####
+  if(rlang::is_missing(xlsxFile)){snd:::sys_abort_NoArg(x = xlsxFile)}
+  if(rlang::is_missing(sheet)){snd:::sys_abort_NoArg(x = sheet)}
   snd:::checkFile_xlsx(xlsxFile = xlsxFile)
 
+  #0. Prep wrok ####
   ava_factor = snd:::grab_xlsxFactor(xlsxFile = xlsxFile)
   ava_item = snd:::grab_xlsxItem(xlsxFile = xlsxFile)
   ava_data = snd:::grab_xlsxData(xlsxFile = xlsxFile)
 
+  #1. Check sheet wrong class, null or duplicate ####
   if(is.null(sheet)){
     sheet = ava_data
   } else {
@@ -27,56 +30,55 @@ checkRW_xlsx = function(xlsxFile, sheet = NULL){
       snd:::sys_abort_WrongClass(x = sheet, class = c("character", "NULL"))
     }
     if(sum(duplicated(sheet))){
-      sheet = unique(sheet)
-      custom = stringr::str_flatten(string = paste0("{.code ", sheet, "}"), collapse = ", ")
       snd:::sys_warn(message = c("!" = "Duplicated items found in {.arg {arg}}",
                                  "i" = "{.arg {arg}} changed to following:",
-                                 "i" = custom),
-                     x = sheet)
+                                 "i" = snd:::sys_message_sheet(sheet = unique(sheet))),
+                     arg = rlang::caller_arg(sheet))
     }
   }
 
-  ##Check if arg `sheet` are present in file as data sheets####
+  #2. Check sheet presence####
   data_availability = (sheet %in% ava_data)
   if(sum(!data_availability)){
-    unava_data_name = stringr::str_flatten(string = paste0("{.code ", sheet[!data_availability], "}"),
-                                           collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Sheet unavailable in {.arg {arg}}",
-                                "i" = "Please check if following sheets are available in {.arg {arg}}",
-                                "i" = "Sheets not found in {.arg {arg}}:",
-                                "i" = unava_data_name),
+    snd:::sys_abort(message = c("x" = "Sheets unavailable in {.arg {arg}}",
+                                "!" = "Sheets not found in {.arg {arg}}:",
+                                "i" = snd:::sys_message_sheet(sheet = sheet[!data_availability]),
+                                "i" = "Sheets available in {.arg {arg}}:",
+                                "i" = snd:::sys_message_sheet(sheet = ava_data)),
                     arg = rlang::caller_arg(arg = xlsxFile))
   }
 
-  ##Check if the data sheets have a corresponding factor sheet ####
-  check_factor = function(x, factor){
-    x = paste0("#factor", stringr::str_sub(string = x, start = 6L, end = -1L))
-    return((x %in% factor) | ("#factor" %in% factor))
-  }
-  factor_availability = sapply(X = sheet, FUN = check_factor, factor = ava_factor, simplify = TRUE, USE.NAMES = FALSE)
+  #3. Check corresponding factor sheet####
+  factor_availability = sapply(X = sheet,
+                               FUN = function(X, ava_factor){
+                                 X = paste0("#factor", stringr::str_sub(string = X, start = 6L, end = -1L))
+                                 return((X %in% ava_factor) | ("#factor" %in% ava_factor))
+                               },
+                               ava_factor = ava_factor, simplify = TRUE, USE.NAMES = FALSE)
   if(sum(!factor_availability)){
-    unava_factor_name = stringr::str_flatten(string = paste0("{.code ", sheet[!factor_availability], "}"),
-                                             collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Factor sheet unavailable in {.arg {arg}}",
+    failed_sheet = stringr::str_replace(string = sheet[!factor_availability],
+                                        pattern = "^#data_", replacement = "#factor_")
+    snd:::sys_abort(message = c("x" = "Factor sheets unavailable in {.arg {arg}}",
                                 "i" = "Please check if following sheets are available in {.arg {arg}}",
                                 "i" = "Sheets not found in {.arg {arg}}:",
-                                "i" = unava_factor_name),
+                                "i" = snd:::sys_message_sheet(sheet = failed_sheet)),
                     arg = rlang::caller_arg(arg = xlsxFile))
   }
 
-  ##Check if the data sheets have a corresponding item sheet####
-  check_item = function(x, item){
-    x = paste0("#item", stringr::str_sub(string = x, start = 6L, end = -1L))
-    return((x %in% item) | ("#item" %in% item))
-  }
-  item_availability = sapply(X = sheet, FUN = check_item, item = ava_item, simplify = TRUE, USE.NAMES = FALSE)
+  #4. Check corresponding item sheet####
+  item_availability = sapply(X = sheet,
+                             FUN = function(X, ava_item){
+                               X = paste0("#item", stringr::str_sub(string = X, start = 6L, end = -1L))
+                               return((X %in% ava_item) | ("#item" %in% ava_item))
+                               },
+                             ava_item = ava_item, simplify = TRUE, USE.NAMES = FALSE)
   if(sum(!item_availability)){
-    unava_item_name = stringr::str_flatten(string = paste0("{.code ", sheet[!item_availability], "}"),
-                                             collapse = ", ")
-    snd:::sys_abort(message = c("x" = "Item sheet unavailable in {.arg {arg}}",
+    failed_sheet = stringr::str_replace(string = sheet[!item_availability],
+                                        pattern = "^#data_", replacement = "#item_")
+    snd:::sys_abort(message = c("x" = "Item sheets unavailable in {.arg {arg}}",
                                 "i" = "Please check if following sheets are available in {.arg {arg}}",
                                 "i" = "Sheets not found in {.arg {arg}}:",
-                                "i" = unava_item_name),
+                                "i" = snd:::sys_message_sheet(sheet = failed_sheet)),
                     arg = rlang::caller_arg(arg = xlsxFile))
   }
 }

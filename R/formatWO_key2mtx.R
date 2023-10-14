@@ -120,7 +120,8 @@ formatWO_key2mtx.sndkey_format = function(key, formater, formatee, formaterName,
   return(snd:::formatWO_key2mtx_sndkey_format(key, formater, formatee, formaterName, formateeName))
 }
 
-#' @export
+#' @keywords internal
+#' @rdname formatWO_key2mtx
 formatWO_key2mtx_sndkey_format = function(key, formater, formatee, formaterName, formateeName){
   UseMethod(generic = "formatWO_key2mtx_sndkey_format", object = formater)
 }
@@ -204,7 +205,8 @@ formatWO_key2mtx.sndkey_label = function(key, formater, formatee, formaterName, 
   return(snd:::formatWO_key2mtx_sndkey_label(key, formater, formatee, formaterName, formateeName))
 }
 
-#' @export
+#' @keywords internal
+#' @rdname formatWO_key2mtx
 formatWO_key2mtx_sndkey_label = function(key, formater, formatee, formaterName, formateeName){
   UseMethod(generic = "formatWO_key2mtx_sndkey_label", object = formater)
 }

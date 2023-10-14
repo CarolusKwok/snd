@@ -4,10 +4,10 @@
 \alias{sys_format_support}
 \title{List out all supported formats in SND}
 \usage{
-sys_format_support(with_abbr = F)
+sys_format_support(with_abbr = FALSE)
 }
 \arguments{
-\item{with_abbr}{A logical value. If \code{TRUE}, returns with the alias, abbreviations, and default values for each type of data.}
+\item{with_abbr}{A logical value. If \code{TRUE}, returns with the alias, abbreviations, and default values for each type of data. By default (\code{FALSE}), returns none of the above.}
 }
 \value{
 A list of supported formats/ classes, in \code{character}
@@ -16,6 +16,6 @@ A list of supported formats/ classes, in \code{character}
 List out all supported formats in SND
 }
 \examples{
-sys_format_support()
+snd:::sys_format_support()
 }
 \keyword{internal}
