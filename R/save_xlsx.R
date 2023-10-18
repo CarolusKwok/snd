@@ -12,7 +12,7 @@ save_xlsx = function(snd, xlsxFile){
   names = names(snd)
 
   #Format snd's data
-  for(i in 1:length(snd)){
+  for(i in seq_along(snd)){
     index_data = match(x = TRUE, table = sapply(X = snd[[i]], FUN = snd::is_snd_data))
     keys = snd::grab_mtxKey(snd[[i]][[index_data]])
     mtxName = names[[i]]
@@ -22,7 +22,7 @@ save_xlsx = function(snd, xlsxFile){
   }
 
   #Format snd's data by snd's factor
-  for(i in 1:length(snd)){
+  for(i in seq_along(snd)){
     index_data = match(x = TRUE, table = sapply(X = snd[[i]], FUN = snd::is_snd_data))
     index_factor = match(x = TRUE, table = sapply(X = snd[[i]], FUN = snd::is_snd_factor))
     keys = snd::grab_mtxKey(snd[[i]][[index_factor]])
@@ -36,7 +36,7 @@ save_xlsx = function(snd, xlsxFile){
   }
 
   #Format snd's data by snd's item
-  for(i in 1:length(snd)){
+  for(i in seq_along(snd)){
     index_data = match(x = TRUE, table = sapply(X = snd[[i]], FUN = snd::is_snd_data))
     index_item = match(x = TRUE, table = sapply(X = snd[[i]], FUN = snd::is_snd_item))
     keys = snd::grab_mtxKey(snd[[i]][[index_item]])

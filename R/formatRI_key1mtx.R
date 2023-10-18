@@ -26,11 +26,7 @@ formatRI_key = function(key, mtx, mtxName){
 
 #' @export
 formatRI_key.default = function(key, mtx, mtxName){
-  snd:::sys_warn(message = c("!" = "Key not supported",
-                             "i" = "Key {.col key} in {.mtx {mtxName}} is not supported",
-                             "i" = "key {.col key} is skipped"),
-                 key = key, mtxName = mtxName)
-  return(mtx)
+  return(invisible(mtx))
 }
 
 #' @export
@@ -40,15 +36,15 @@ formatRI_key.sndkey_type = function(key, mtx, mtxName){
   support = c("data", "calc", "stat")
   test = !(mtx$`@type` %in% support)
   if(sum(test)){
-    mtx = dplyr::mutate(.data = mtx,
-                        `@type` = ifelse(test, "error", `@type`))
     snd:::sys_warn(message = c("!" = "Incorrect {.col @type} in {.mtx {mtxName}}",
                                "i" = "Supported {.col @type}:",
                                "i" = snd:::sys_message_code(code = support),
                                "i" = "Failed {.col @type}:",
-                               "i" = snd:::sys_message_code(code = (mtx$`@type`)[test]),
+                               "i" = snd:::sys_message_code(code = unique((mtx$`@type`)[test])),
                                "!" = "All incorrect types are changed to {.code error}"),
                    mtxName = mtxName)
+    mtx = dplyr::mutate(.data = mtx,
+                        `@type` = ifelse(test, "error", `@type`))
   }
-  return(mtx)
+  return(invisible(mtx))
 }

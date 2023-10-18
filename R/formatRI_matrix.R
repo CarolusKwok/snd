@@ -44,18 +44,16 @@ formatRI_matrix.snd_data = function(mtx, mtxName){
     mtx = snd:::formatRI_key(key = i, mtx = mtx, mtxName = mtxName)
   }
 
-  #4. Check Key-Factor uniqueness ####
-  ava_Key = snd:::grab_mtxKey(dataframe = mtx)
+  #4. Check Factor uniqueness ####
   ava_Factor = snd:::grab_mtxFactor(dataframe = mtx)
-  mtx_selected = dplyr::select(.data = mtx, dplyr::all_of(ava_Key), dplyr::all_of(ava_Factor))
-  mtx_selected_distinct = dplyr::distinct(.data = mtx_selected)
-  if(nrow(mtx_selected) != nrow(mtx_selected_distinct)){
-    print_ava_Factor = stringr::str_flatten(string = paste0("{.col ", ava_Factor, "}"), collapse = ", ")
+  mtx_selected = dplyr::select(.data = dplyr::filter(.data = mtx, `@type` == "data"),
+                               dplyr::all_of(ava_Factor))
+  if(sum(duplicated(mtx_selected))){
     snd:::sys_warn(message = c("!" = "Non-unique data in {.mtx {mtxName}}",
                                "i" = "Key-Factor combinations are not unique",
                                "i" = "Are you sure that's correct?",
                                "i" = "Factors used:",
-                               "i" = print_ava_Factor),
+                               "i" =  snd:::sys_message_columns(columns = ava_Factor)),
                    x = mtx, mtxName = mtxName)
   }
   #Return ####
@@ -99,6 +97,13 @@ formatRI_matrix.snd_factor = function(mtx, mtxName){
   #2. Format key ####
   for(i in snd:::grab_mtxKey(mtx)){
     mtx = snd:::formatRI_key(key = i, mtx = mtx, mtxName = mtxName)
+  }
+  #3. Format factor #NA to na####
+  for(i in snd::grab_mtxFactor(mtx)){
+    mtx = dplyr::mutate(.data = mtx,
+                        "{i}" := ifelse(!!rlang::sym({{i}}) == "#NA",
+                                        NA,
+                                        !!rlang::sym({{i}})))
   }
   #Return ####
   return(invisible(mtx))

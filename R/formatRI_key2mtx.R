@@ -20,7 +20,7 @@ formatRI_key2mtx = function(key, formater, formatee, formaterName, formateeName)
   if(rlang::is_missing(formateeName)){snd:::sys_abort_NoArg(formateeName)}
   if(length(key) != 1){snd:::sys_abort_WrongLength(x = key, length = 1L)}
   valid_key = key %in% snd::grab_mtxKey(formater)
-  if(!valid_key){snd:::sys_abort_mtxMissingKey(x = mtx, keys_missing = key, name = mtxName)}
+  if(!valid_key){snd:::sys_abort_mtxMissingSelectedKey(x = formater, keys_missing = key, name = formaterName)}
 
   #Call other functions to format using the keys ####
   key = snd:::classify_key(stringr::str_remove(string = key, pattern = "^@"))
@@ -44,7 +44,7 @@ formatRI_key2mtx.sndkey_factor = function(key, formater, formatee, formaterName,
   if(sum(test)){
     snd:::sys_abort(message = c("x" = "{.mtx {formaterName}} contain items in {.col @factor}",
                                 "!" = "Items include:",
-                                "i" = snd:::sys_message_code(code = ava_factor[test])),
+                                "i" = snd:::sys_message_code(code = unique(ava_factor[test]))),
                     formaterName = formaterName)
   }
 
@@ -54,7 +54,7 @@ formatRI_key2mtx.sndkey_factor = function(key, formater, formatee, formaterName,
   if(sum(test)){
     snd:::sys_abort(message = c("x" = "Missing factors in {.mtx {formaterName}} {.col @factor}",
                                 "i" = "Factors missing:",
-                                "i" = snd:::sys_message_columns(columns = use_factor[test])),
+                                "i" = snd:::sys_message_columns(columns = unique(use_factor[test]))),
                     formaterName = formaterName)
   }
   #Return ####
@@ -64,7 +64,7 @@ formatRI_key2mtx.sndkey_factor = function(key, formater, formatee, formaterName,
 
 #' @export
 formatRI_key2mtx.sndkey_item = function(key, formater, formatee, formaterName, formateeName){
-  ava_item = mtx$`@item`
+  ava_item = formater$`@item`
   #1. Check if @item is all filled ####
   test = sum(is.na(ava_item) | ava_item == "#NA")
   if(test){
@@ -78,7 +78,7 @@ formatRI_key2mtx.sndkey_item = function(key, formater, formatee, formaterName, f
   if(sum(test)){
     snd:::sys_abort(message = c("x" = "{.mtx {formaterName}} contain factors in {.col @item}",
                                 "!" = "Factors include:",
-                                "i" = snd:::sys_message_code(code = ava_item[test])),
+                                "i" = snd:::sys_message_code(code = unique(ava_item[test]))),
                     formaterName = formaterName)
   }
   #3. Checks if the formatee described ####
@@ -87,7 +87,7 @@ formatRI_key2mtx.sndkey_item = function(key, formater, formatee, formaterName, f
   if(sum(test)){
     snd:::sys_abort(message = c("x" = "Missing items in {.mtx {formaterName}} {.col @item}",
                                 "i" = "Items missing:",
-                                "i" = snd:::sys_message_columns(columns = use_item[test])),
+                                "i" = snd:::sys_message_columns(columns = unique(use_item[test]))),
                     formaterName = formaterName)
   }
   #Return ####
@@ -122,7 +122,7 @@ formatRI_key2mtx.sndkey_format = function(key, formater, formatee, formaterName,
                   fullname = ifelse(is.na(prefix), full, paste0(prefix, full)),
                   fullname = ifelse(is.na(tail), fullname, paste0(fullname, "_", tail)))
 
-  if(sum(formated_dt$match == 0)){
+  if(sum(format$match == 0)){
     snd:::sys_abort(message = c("x" = "Unsupported format in {.mtx {formaterName}}",
                                 "!" = "Unsupported format include",
                                 "!" = snd:::sys_message_code(code = unique(dplyr::filter(.data = format, match == 0)$format)),
@@ -155,7 +155,8 @@ formatRI_key2mtx_sndkey_format.snd_factor = function(key, formater, formatee, fo
   #1. Check consistent @format across @factor####
   ava_factor = unique(formater$`@factor`)
   seperated_factor = lapply(X = ava_factor,
-                            FUN = function(X, formater){formater = duplyr::filter(formater, `@factor` == X)})
+                            FUN = function(X, formater){formater = dplyr::filter(formater, `@factor` == X)},
+                            formater = formater)
   test = sapply(X = seperated_factor,
                 FUN = function(X){return(length(unique(X$`@format`)) != 1)})
   if(sum(test)){
@@ -193,7 +194,7 @@ formatRI_key2mtx_sndkey_format.snd_factor = function(key, formater, formatee, fo
                     SIMPLIFY = FALSE, USE.NAMES = FALSE)
 
   #3. return the formated data back to formatee ###
-  for(f in 1:length(use_factor)){
+  for(f in seq_along(use_factor)){
     selName = use_factor[[f]]
     selFormated = formated[[f]]
     formatee = dplyr::mutate(.data = formatee, "{selName}" := selFormated)
@@ -207,9 +208,8 @@ formatRI_key2mtx_sndkey_format.snd_item = function(key, formater, formatee, form
   #1. Check consistent @format across @factor####
   ava_item = unique(formater$`@item`)
   seperated_item = lapply(X = ava_item,
-                          FUN = function(X, formater){
-                            formater = duplyr::filter(formater, `@item` == X)
-                            })
+                          FUN = function(X, formater){formater = dplyr::filter(formater, `@item` == X)},
+                          formater = formater)
   test = sapply(X = seperated_item,
                 FUN = function(X){return(length(unique(X$`@item`)) != 1)})
   if(sum(test)){
@@ -248,7 +248,7 @@ formatRI_key2mtx_sndkey_format.snd_item = function(key, formater, formatee, form
                     SIMPLIFY = FALSE, USE.NAMES = FALSE)
 
   #3. return the formated data back to formatee ###
-  for(f in 1:length(use_item)){
+  for(f in seq_along(use_item)){
     selName = use_item[[f]]
     selFormated = formated[[f]]
     formatee = dplyr::mutate(.data = formatee, "{selName}" := selFormated)

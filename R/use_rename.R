@@ -47,13 +47,13 @@ rename = function(snd, ...){
                                  "!" = "You only provide {length(dots)}",
                                  "i" = "The overflowed names will be ignored"),
                      OGname = OGname, dots = dots)
-      modNames = dots[1:length(OGname)]
+      modNames = dots[seq_along(OGname)]
     } else {
       modNames = dots
     }
   } else if (method == "named"){  #named method ####
     modNames = OGname
-    for(i in 1:length(dots)){
+    for(i in seq_along(dots)){
       index = match(x = dots[[i]], table = OGname, nomatch = NA)
       if(is.na(index)){
         next
@@ -81,7 +81,7 @@ rename = function(snd, ...){
 
   ##Actually start renameing ####
   names = names(snd)
-  names = sapply(X = 1:length(names),
+  names = sapply(X = seq_along(length(names)),
                  FUN = function(X, is_sndset, names, modNames){
                    if(is_sndset[[X]]){
                      return(modNames[sum(is_sndset[1:X])])

@@ -47,7 +47,7 @@ sys_abort = function(message, x, arg = rlang::caller_arg(x), ...){
       break}
   }
   list = rev(list)
-  for(i in 1:length(list)){
+  for(i in seq_along(list)){
     if(identical(x = list[[i]], y = globalenv())){next}
     if(identical(x = ls(envir = list[[i]]), y = character(0L))){next}
     cli::cli_abort(message = message, call = list[[i]])

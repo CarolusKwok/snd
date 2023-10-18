@@ -50,7 +50,7 @@ read_xlsx = function(xlsxFile, sheet = NULL){
   #Start reading in the data of the above use_ list and format all the classes accordingly ####
   workbook = openxlsx::loadWorkbook(xlsxFile = xlsxFile)
   newStyle = openxlsx::createStyle(numFmt = "TEXT")
-  lapply(X = 1:length(openxlsx::getStyles(wb = workbook)),
+  lapply(X = seq_along(openxlsx::getStyles(wb = workbook)),
          FUN = openxlsx::replaceStyle, wb = workbook, newStyle = newStyle)
   data_data = lapply(X = lapply(X = usename_data, FUN = openxlsx::readWorkbook,
                                 xlsxFile = workbook),
