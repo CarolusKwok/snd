@@ -6,8 +6,6 @@ formatWO_key2mtx_format_use = function(format, colItem, colName, mtxName, force 
 
 #' @export
 formatWO_key2mtx_format_use.Fcharacter = function(format, colItem, colName, mtxName, force = FALSE){
-  #TO BE DELETED
-
   colItem = ifelse(is.na(colItem), NA, as.character(colItem))
   return(colItem)
 }

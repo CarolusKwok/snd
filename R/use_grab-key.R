@@ -15,6 +15,9 @@
 #' @export
 #' @rdname grab_key
 grab_keyPrefix = function(mtx, key){
+  if(rlang::is_missing(mtx)){snd:::sys_abort_NoArg(mtx)}
+  if(rlang::is_missing(key)){snd:::sys_abort_NoArg(key)}
+
   dplyr::select(.data = mtx, key = {{key}}) %>%
     unlist() %>%
     stringr::str_extract(pattern = "(.*_)|(.*)") %>%
@@ -26,6 +29,9 @@ grab_keyPrefix = function(mtx, key){
 #' @export
 #' @rdname grab_key
 grab_keyHead = function(mtx, key){
+  if(rlang::is_missing(mtx)){snd:::sys_abort_NoArg(mtx)}
+  if(rlang::is_missing(key)){snd:::sys_abort_NoArg(key)}
+
   dplyr::select(.data = mtx, key = {{key}}) %>% unlist() %>%
     stringr::str_extract(pattern = "(.*_)|(.*)") %>%
     stringr::str_extract(pattern = "[A-Za-z0-9]+") %>%
@@ -35,6 +41,9 @@ grab_keyHead = function(mtx, key){
 #' @export
 #' @rdname grab_key
 grab_keyTail = function(mtx, key){
+  if(rlang::is_missing(mtx)){snd:::sys_abort_NoArg(mtx)}
+  if(rlang::is_missing(key)){snd:::sys_abort_NoArg(key)}
+
   dplyr::select(.data = mtx, key = {{key}}) %>% unlist %>%
     stringr::str_extract(pattern = "_.*") %>%
     stringr::str_remove(pattern = "_") %>%

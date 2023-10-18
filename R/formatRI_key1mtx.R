@@ -34,7 +34,7 @@ formatRI_key.sndkey_type = function(key, mtx, mtxName){
   #Check if @type is of the following classes.
   #If not, type it as "error"
   support = c("data", "calc", "stat")
-  test = !(mtx$`@type` %in% support)
+  test = !(snd::grab_keyHead(mtx = mtx, key = "@type") %in% support)
   if(sum(test)){
     snd:::sys_warn(message = c("!" = "Incorrect {.col @type} in {.mtx {mtxName}}",
                                "i" = "Supported {.col @type}:",

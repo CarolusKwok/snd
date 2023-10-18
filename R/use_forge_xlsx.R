@@ -28,9 +28,10 @@ forge_xlsx = function(xlsxFile, sheet){
   newStyle = openxlsx::createStyle(numFmt = "TEXT")
   lapply(X = seq_along(openxlsx::getStyles(wb = workbook)),
          FUN = openxlsx::replaceStyle, wb = workbook, newStyle = newStyle)
-  data_data = lapply(X = lapply(X = use_data, FUN = openxlsx::readWorkbook,
-                                xlsxFile = workbook),
-                     FUN = snd:::classify_data)
+  data_data = lapply(X = use_data,
+                     FUN = function(X, workbook){
+                       return(snd:::classify_data(openxlsx::readWorkbook(xlsxFile = workbook, sheet = X)))
+                     }, workbook = workbook)
 
   #Format it accordingly ####
   data_data = mapply(FUN = snd:::formatRI_matrix,
@@ -83,17 +84,26 @@ forge_xlsx = function(xlsxFile, sheet){
   data_item = mapply(FUN = snd:::formatRI_matrix,
                      mtx = data_item, mtxName = use_item, SIMPLIFY = FALSE)
 
-  data_data = mapply(FUN = function(data_data, data_item, data_factor, use_data){
-    for(k in snd::grab_mtxKey(data_item)){data_data = snd:::formatRI_key2mtx(key = k,
-                                                                             formater = data_item,
-                                                                             formatee = data_data,
-                                                                             formateeName = use_data)}
-    for(k in snd::grab_mtxKey(data_factor)){data_data = snd:::formatRI_key2mtx(key = k,
-                                                                               formater = data_factor,
-                                                                               formatee = data_data,
-                                                                               formateeName = use_data)}
-    return(data_data)},
-    data_data = data_data, data_item = data_item, data_factor = data_factor, use_data = use_data, SIMPLIFY = FALSE)
+  for(i in seq_along(data_data)){
+    for(k in snd::grab_mtxKey(data_item[[i]])){
+      formated = snd:::formatRI_key2mtx(key = k,
+                                        formater = data_item[[i]],
+                                        formatee = data_data[[i]],
+                                        formaterName = use_item[[i]],
+                                        formateeName = use_data[[i]])
+      data_item[[i]] = formated$formater
+      data_data[[i]] = formated$formatee
+    }
+    for(k in snd::grab_mtxKey(data_factor[[i]])){
+      formated = snd:::formatRI_key2mtx(key = k,
+                                        formater = data_factor[[i]],
+                                        formatee = data_data[[i]],
+                                        formaterName = use_factor[[i]],
+                                        formateeName = use_data[[i]])
+      data_factor[[i]] = formated$formater
+      data_data[[i]] = formated$formatee
+    }
+  }
 
   #Package as SND and return ####
   mapply(FUN = function(data_item, data_data, data_factor){
