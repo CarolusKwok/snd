@@ -20,7 +20,6 @@ formatRI_key2mtx_sndkey_label.snd_factor = function(key, formater, formatee, for
                                 "i" = snd:::sys_message_columns(columns = ava_factor[test])),
                     formaterName = formaterName)
   }
-
   #2. check if ### is included with other labels ####
   test_hash = sapply(X = seperated_factor, FUN = function(X){return("###" %in% X$`@label`)}, simplify = TRUE, USE.NAMES = FALSE)
   test_nrow = sapply(X = seperated_factor, FUN = function(X){return(nrow(X) > 1)}, simplify = TRUE, USE.NAMES = FALSE)
@@ -34,11 +33,9 @@ formatRI_key2mtx_sndkey_label.snd_factor = function(key, formater, formatee, for
                                 "i" = "Exclusive item: {.code ###}"),
                     formaterName = formaterName)
   }
-
   #3. Turn #NA into actually NA ####
   formater = dplyr::mutate(.data = formater,
                            `@label` = ifelse(`@label` == "#NA", NA, `@label`))
-
   #4. Split and test ####
   use_factor = snd:::grab_mtxFactor(formatee)
   index = match(x = use_factor, table = ava_factor, nomatch = 0L)
@@ -70,7 +67,7 @@ formatRI_key2mtx_sndkey_label.snd_factor = function(key, formater, formatee, for
   supportedFormat = list(snd:::sys_format_support(with_abbr = TRUE))
   test = mapply(FUN =
                   function(use_factor, use_format, use_label, ava_data, supportedFormat){
-                    if("###" %in% label){
+                    if("###" %in% use_label){
                       return(FALSE) #FALSE if everythings fine
                     } else {
                       defaultValue = dplyr::filter(.data = as.data.frame(supportedFormat),
@@ -99,7 +96,7 @@ formatRI_key2mtx_sndkey_label.snd_factor = function(key, formater, formatee, for
 formatRI_key2mtx_sndkey_label.snd_item = function(key, formater, formatee, formaterName, formateeName){
   #1. separate the matrix by @item, check if @label has repetitive items ####
   ava_item = unique(formater$`@item`)
-  seperated_item = lapply(X = unique_item,
+  seperated_item = lapply(X = ava_item,
                           FUN = function(X, formater){return(dplyr::filter(.data = formater, `@item` == X))},
                           formater = formater)
   test = sapply(X = seperated_item, FUN = function(X){return(sum(duplicated(X$`@label`)))},
@@ -125,15 +122,13 @@ formatRI_key2mtx_sndkey_label.snd_item = function(key, formater, formatee, forma
                                 "i" = "Exclusive item include: {.code ###}"),
                     formaterName = formaterName)
   }
-
   #3. Turn #NA into actually NA ####
   formater = dplyr::mutate(.data = formater,
                            `@label` = ifelse(`@label` == "#NA", NA, `@label`))
-
   #4. Split and test ####
   use_item = snd:::grab_mtxItem(formatee)
   index = match(x = use_item, table = ava_item, nomatch = 0L)
-  use_format = lapply(X = use_item,
+  use_format = lapply(X = index,
                       FUN = function(X, seperated_item){
                         seperated_item[[X]]$`@format`  %>%
                           unlist(use.names = FALSE) %>%
@@ -142,8 +137,7 @@ formatRI_key2mtx_sndkey_label.snd_item = function(key, formater, formatee, forma
                                          class = paste0("DT",
                                                         stringr::str_remove(string = .,
                                                                             pattern = "^#"))) %>%
-                          return
-                      },
+                          return},
                       seperated_item = seperated_item)
   use_label = lapply(X = index,
                      FUN = function(X, seperated_item){
