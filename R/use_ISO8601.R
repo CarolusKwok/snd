@@ -20,7 +20,7 @@
 #' The timezone component contains the following format:
 #' - ±HH:mm
 #' - ±HHmm
-#' - Z (represents Zulu time or UTC time, +00:00)
+#' - Z (represents Zulu or UTC time, +00:00)
 #'
 #' For more information, please visit the wiki page over [here](https://en.wikipedia.org/wiki/ISO_8601).
 #'
@@ -50,147 +50,110 @@ read_ISO8601 = function(time, tzone = ""){
   #Check ####
   if(rlang::is_missing(time)){snd:::sys_abort_NoArg(time)}
   if(rlang::is_missing(tzone)){snd:::sys_abort_NoArg(tzone)}
-  time = as.character(time)
-  tzone = as.character(tzone)
+  if(!is.character(time)){snd:::sys_abort_WrongClass(x = time, class = "character")}
+  if(!is.character(tzone)){snd:::sys_abort_WrongClass(x = tzone, class = "character")}
   if(length(tzone) != 1){snd:::sys_abort_WrongLength(tzone, 1L)}
 
   #Accepted Formats ####
-  formatDate = "(^D?(\\+|\\-)?\\d{8})|(^D?(\\+|\\-)?\\d{4}\\-\\d{2}\\-\\d{2})|(^D?(\\+|\\-)?\\d{4}(\\-\\d{2})?)"
+  formatDate = "^D?(\\+)?((\\d{8})|(\\d{4}\\-\\d{2}\\-\\d{2}))"
   formatTime = "^T(\\d{2})?(:?\\d{2})?(:?\\d{2})?(\\.\\d{1,3})?(Z|((\\+|\\-)\\d{2}(:?\\d{2})?))?"
-  origin_date = as.Date(x = "0001-01-01", tz = "UTC")
-  #Find local time offsets####
-  time_local = as.POSIXct(Sys.time())
-  time_UTC = lubridate::with_tz(time_local, tzone = "UTC")
-  date_diff = as.numeric(lubridate::as_date(time_local) - lubridate::as_date(time_UTC))
-  hour_diff = as.numeric(lubridate::hour(time_local) - lubridate::hour(time_UTC))
-  min_diff = as.numeric(lubridate::minute(time_local) - lubridate::minute(time_UTC))
-  offset_local = -(date_diff*24*60 + hour_diff*60 + min_diff) #Unit in minutes
 
-  #Start! ####
-  process = tibble::tibble(nchar = 0,
-                           str = time,
-                           str_remain = time) %>%
-    dplyr::mutate(date = stringr::str_extract(string = str_remain, pattern = formatDate),
-                  str_remain = stringr::str_remove(string = str_remain, pattern = formatDate),
-                  time = stringr::str_extract(string = str_remain, pattern = formatTime),
-                  str_remain = stringr::str_remove(str_remain, pattern = formatTime),
-                  date = ifelse(is.na(date),
-                                stringr::str_extract(string = str_remain, pattern = formatDate),
-                                date),
+  #Get local timezone ####
+  time_lc = Sys.time()
+  time_UTC = lubridate::with_tz(time_lc, tzone = "UTC")
 
-                  #Grab dot & tz, remove from time ####
-                  dot = stringr::str_extract(time, "\\.\\d{1,3}"),
-                  tz = stringr::str_extract(time, "(Z|(\\+|\\-)\\d{2}:?(\\d{2})?)$"),
-                  time = stringr::str_remove_all(time, pattern = "(\\.\\d{1,3})|(Z$)|(((\\+|\\-)\\d{2}:?(\\d{2})?)$)"),
+  tz_lc = (as.numeric(lubridate::date(time_lc) - lubridate::date(time_UTC)) * 24 +
+             as.numeric(lubridate::hour(time_lc) - lubridate::hour(time_UTC))) * 60 +
+    as.numeric(lubridate::minute(time_lc) - lubridate::minute(time_UTC)) #in minutes
+  tz_sg = ifelse(sign(tz_lc), "+", "-")
+  tz_lc = abs(tz_lc)
+  tz_hr = floor(tz_lc / 60)
+  tz_mn = tz_lc - (tz_hr*60)
 
-                  #If there is still string remaining, there is an error.
+  tz_str = paste0(tz_sg,
+                  stringr::str_pad(tz_hr, width = 2L, side = "left", pad = "0", use_width = TRUE),
+                  stringr::str_pad(tz_mn, width = 2L, side = "left", pad = "0", use_width = TRUE))
 
-                  #Fill in the blanks for date time dot, rephrase Z into 0000 ####
-                  date = ifelse(is.na(date), "00010101", date),
-                  time = ifelse(is.na(time), "T120000", time),
-                  dot = ifelse(is.na(dot), ".000", dot),
-                  tz = ifelse(tz == "Z", "+0000", tz),
+  #Processing ####
+  process = dplyr::mutate(.data = data.frame(str = time),
+                          str_date = stringr::str_extract(string = str, pattern = formatDate),
+                          str_remain = stringr::str_remove(string = str, pattern = formatDate),
+                          str_time = stringr::str_extract(string = str_remain, pattern  = formatTime),
 
-                  #Grab year sign ####
-                  yrSign = ifelse(stringr::str_detect(substr(date, 1, 2), pattern = "\\-"), -1, 0),
-                  #Remove leading flags, : , +, -####
-                  date = stringr::str_remove_all(date, pattern = "(^D)|\\-|\\+"),
-                  time = stringr::str_remove_all(time, pattern = "(^T)|:"),
-                  #Format the date. If missing, guess using median ####
-                  nchar = nchar(date),
-                  date = ifelse(nchar == 4,
-                                paste0(date, "0702"),
-                                ifelse(nchar == 6,
-                                       paste0(date, ifelse(stringr::str_sub(string = Date, start = 5L, end = 6L) == "02", "15", "16")),
-                                       date)),
-                  date  = sub("(\\d{4})(\\d{2})(\\d{2})", "\\1-\\2-\\3", x = date),
+                          #Remove flags, get dots n tz ####
+                          str_date = stringr::str_remove_all(string = str_date, pattern = "D"),
+                          str_time = stringr::str_remove_all(string = str_time, pattern = "T") %>%
+                            ifelse(is.na(.), "12:00:00", .),
 
-                  #Calculate offset by negative year####
-                  offset_yr = lubridate::years(ifelse(yrSign == -1,
-                                                      as.numeric(stringr::str_sub(date, 1L, 4L))*2,
-                                                      0)),
-                  #Guess how the dot will be used ####
-                  nchar = nchar(time),
-                  dot_use24 = as.integer(nchar < 2),
-                  dot_use60 = (nchar < 4) + (nchar < 6),
-                  #Add tailing 0s at time and split####
-                  time = sub(pattern = "(\\d{2})(\\d{2})(\\d{2})",
-                             replacement = "\\1:\\2:\\3",
-                             x = stringr::str_pad(string = time, width = 6, side = "right", pad = "0")),
+                          str_dot = stringr::str_extract(string = str_time, pattern = "\\.\\d{1,3}"),
+                          str_tz = stringr::str_extract(string = str_time, pattern = "(Z|(\\+|\\-)\\d{2}:?(\\d{2})?)$"),
+                          str_time = stringr::str_remove_all(string = str_time, pattern = "(\\.\\d{1,3})|(Z|(\\+|\\-)\\d{2}:?(\\d{2})?)$"),
 
-                  #Find the compensation by dot ####
-                  offset_dot = lubridate::seconds((as.numeric(dot) * (24^dot_use24) * (60^dot_use60))),
+                          #Format the date components #####
+                          str_date = stringr::str_remove_all(string = str_date, pattern = "\\-"),
 
-                  #Find the compensation by tz ####
-                  tz = stringr::str_pad(string = tz, width = 5L, side = "right", pad = "0"),
-                  tzSign = as.integer(ifelse(stringr::str_detect(tz, pattern = "^\\-"), -1, +1)),
-                  tzHr = as.integer(stringr::str_sub(string = tz, start = 2L, end = 3L)),
-                  tzMn = as.integer(stringr::str_sub(string = tz, start = 4L, end = 5L)),
-                  offset_tz = lubridate::minutes(ifelse(is.na(tz),
-                                                        offset_local,
-                                                        -tzSign * (tzHr * 60 + tzMn))),
+                          #Format the tz components ####
+                          str_tz = ifelse(is.na(str_tz), tz_str, ifelse(str_tz == "Z", "+00:00", str_tz)),
+                          str_tz = stringr::str_pad(string = stringr::str_remove_all(string = str_tz, pattern = ":"),
+                                                    width = 5L, side = "right", pad = "0", use_width = TRUE),
 
-                  #Set pass as FALSE if doesnt follow criteria
-                  pass = ((!is.na(date) | !is.na(time)) &
-                            (is.na(str_remain) | str_remain == "")),
+                          #Format the time components
+                          str_time = stringr::str_remove_all(string = str_time, pattern = ":"),
+                          lv_dot = nchar(str_time)/2,
+                          lv_dot = ifelse(lv_dot == 3, 1,
+                                   ifelse(lv_dot == 2, 60,
+                                   ifelse(lv_dot == 1, 3600,
+                                                       86400))),
+                          str_dot = as.numeric(ifelse(is.na(str_dot), 0, str_dot)),
+                          str_time = stringr::str_pad(string = str_time, width = 6L, side = "right", pad = "0", use_width = TRUE),
 
-                  #Start Auto formating ####
-                  offset_days = lubridate::days(as.numeric(as.Date(date) - offset_yr - origin_date)),
-                  offset_time = ISOdatetime(1970, 1, 1,
-                                            stringr::str_sub(time, 1L, 2L),
-                                            stringr::str_sub(time, 4L, 5L),
-                                            stringr::str_sub(time, 7L, 8L), tz = "UTC") -
-                    as.POSIXct(x = "1970-01-01 00:00:00", tz = "UTC"),
-                  auto = as.POSIXct(x = "0001-01-01 00:00:00", tz = "UTC") + offset_days + offset_time + offset_dot + offset_tz,
+                          #Bind all the strings ####
+                          com_time = paste0(ifelse(is.na(str_date), "", str_date), " T",
+                                            ifelse(is.na(str_time), "", str_time)),
+                          com_time = as.POSIXct(x = com_time, tz = "UTC", format = "%Y%m%d T%H%M%S"),
 
-                  #Purge any autos that failed pass ####
-                  auto = ifelse(pass, auto, NA),
+                          com_tzsg= ifelse(stringr::str_detect(string = str_tz, pattern = "^\\+"), +1, -1),
+                          com_tz  = (as.numeric(stringr::str_sub(string = str_tz, start = 2L, end = 3L)) * 60 +
+                                       as.numeric(stringr::str_sub(string = str_tz, start = 4L, end = 5L))) * 60,
 
-                  #Refromat auto back as POSIXct
-                  auto = as.POSIXct(auto, origin = "1970-01-01 00:00:00"),
-                  auto_tz = lubridate::with_tz(time = auto, tzone = tzone)
-                  )
-
-
-  #Return ####
-  return(process$auto_tz)
+                          time = com_time + lubridate::seconds(str_dot * lv_dot) + lubridate::seconds(-com_tzsg * com_tz)
+  )
+  return(lubridate::with_tz(time = process$time, tzone = tzone))
 }
 
 #' @export
 #' @rdname ISO8601
 write_ISO8601 = function(time){
-  time = tibble::tibble(time = time,
-                        time_UTC = lubridate::with_tz(time, tzone = "UTC")) %>%
-    dplyr::mutate(
-      #Use the dotted format of str ####
-      second = lubridate::second(time) %>% sprintf(fmt = "%.3f", .) %>% stringr::str_pad(width = 6, side = "left", pad = "0"),
+  #Check ####
+  if(rlang::is_missing(time)){snd:::sys_abort_NoArg(time)}
+  if(!lubridate::is.POSIXct(time)){snd:::sys_abort_WrongClass(x = time, class = "POSIXct")}
+  #Start writng ####
+  time = dplyr::mutate(.data = data.frame(time_lc = time,
+                                          time_UTC = lubridate::with_tz(time, tzone = "UTC")),
 
-      #Find the timezone ####
-      offset_day = lubridate::hours((lubridate::as_date(time) - lubridate::as_date(time_UTC))*24),
-      offset_hour = lubridate::hours(lubridate::hour(time) - lubridate::hour(time_UTC)),
-      offset_min = lubridate::minutes(lubridate::minute(time) - lubridate::minute(time_UTC)),
-      offset_total = as.numeric((offset_day + offset_hour + offset_min)),
-      offset_remain = offset_total,
-      #TZ!
-      TZ_sign = sign(offset_total),
-      offset_remain = abs(offset_total),
-      TZ_hr   = floor(offset_remain/60/60),
-      offset_remain = offset_remain - (TZ_hr*60*60),
-      TZ_min  = floor(offset_remain/60),
-      TZ = paste0(ifelse(TZ_sign == -1, "-", "+"),
-                  sprintf("%02d", TZ_hr), ":",
-                  sprintf("%02d", TZ_min)),
-
-      str = ifelse((is.na(time) | (!inherits(x = time, what = "POSIXct"))),
-                   NA_character_,
-                   paste0("D",
-                          sprintf("%04d", lubridate::year(time)), "-",
-                          sprintf("%02d", lubridate::month(time)), "-",
-                          sprintf("%02d", lubridate::day(time)),
-                          "T",
-                          sprintf("%02d", lubridate::hour(time)), ":",
-                          sprintf("%02d", lubridate::minute(time)), ":",
-                          second, TZ)),
-    )
+                       #Find timezone value #####
+                       tz_lc = (as.numeric(lubridate::date(time_lc) - lubridate::date(time_UTC)) * 24 +
+                                  as.numeric(lubridate::hour(time_lc) - lubridate::hour(time_UTC))) * 60 +
+                         as.numeric(lubridate::minute(time_lc) - lubridate::minute(time_UTC)), #in minutes
+                       tz_sg = ifelse(sign(tz_lc), "+", "-"),
+                       tz_lc = abs(tz_lc),
+                       tz_hr = floor(tz_lc / 60),
+                       tz_mn = tz_lc - (tz_hr*60),
+                       tz = paste0(tz_sg,
+                                   sprintf("%02d", tz_hr), ":",
+                                   sprintf("%02d", tz_mn)),
+                       #Find dot value #####
+                       time_lc_num = (as.numeric(time_lc) %% 1),
+                       time_lc_num = ifelse(stringr::str_sub(string = time_lc_num, start = 1L, end = 2L) == "0.",
+                                            stringr::str_sub(string = round(time_lc_num, digits = 3L), start = 3L, end = -1L),
+                                            time_lc_num),
+                       #Create string ####
+                       str = paste0("D",
+                                    lubridate::date(time_lc),
+                                    "T",
+                                    stringr::str_pad(string = lubridate::hour(time_lc), width = 2L, side = "right", pad = "0"), ":",
+                                    stringr::str_pad(string = lubridate::minute(time_lc), width = 2L, side = "right", pad = "0"), ":",
+                                    stringr::str_pad(string = floor(lubridate::second(time_lc)), width = 2L, side = "right", pad = "0"), ".",
+                                    time_lc_num, tz))
   return(time$str)
 }

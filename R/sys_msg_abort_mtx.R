@@ -1,5 +1,17 @@
+#' @title
+#' System tools: Standard abort message for matrices
+#'
+#' @param x The argument holding the matrix
+#' @param name Optional: name of the matrix
+#'
+#' @return A standard abort message
 #' @keywords internal
-#' @rdname sys_abort_mtx
+sys_abort_mtx = function(name){
+  snd:::sys_abort(message = c("x" = "Something went wrong in the following matrix",
+                              "x" = name))
+}
+
+#' @keywords internal
 sys_abort_mtxMissingSelectedKey = function(x, keys_missing, name){
   if(rlang::is_missing(x)){snd:::sys_abort_NoArg(x)}
   if(rlang::is_missing(keys_missing)){snd:::sys_abort_NoArg(keys_missing)}
@@ -10,5 +22,3 @@ sys_abort_mtxMissingSelectedKey = function(x, keys_missing, name){
                               "i" = "Keys missing: {.col {keys_missing}}"),
                   name = name, keys_missing = keys_missing)
 }
-
-#Used in checkRW_matrix, formatRI_key1mtx, formatRI_key2mtx, formatWO_key1mtx, formatWO_key2mtx,

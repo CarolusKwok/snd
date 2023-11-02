@@ -26,29 +26,5 @@ formatWO_key = function(key, mtx, mtxName){
 
 #' @export
 formatWO_key.default = function(key, mtx, mtxName){
-  snd:::sys_warn(message = c("!" = "Key not supported",
-                             "i" = "Key {.col key} in {.mtx {mtxName}} is not supported",
-                             "i" = "Key {.col key} is skipped"),
-                 key = key, mtxName = mtxName)
   return(mtx)
-}
-
-#' @export
-formatWO_key.sndkey_type = function(key, mtx, mtxName){
-  #Check if @type is of the following classes.
-  #If not, type it as "error"
-  support = c("data", "calc", "stat")
-  test = !(mtx$`@type` %in% support)
-  if(sum(test)){
-    mtx = dplyr::mutate(.data = mtx,
-                        `@type` = ifelse(!test, "error", `@type`))
-    snd:::sys_warn(message = c("!" = "Incorrect {.col @type} in {.mtx {mtxName}}",
-                               "i" = "Supported {.col @type}:",
-                               "i" = snd:::sys_message_code(code = support),
-                               "i" = "Failed {.col @type}:",
-                               "i" = snd:::sys_message_code(code = (mtx$`@type`)[test]),
-                               "!" = "All incorrect types are changed to {.code error}"),
-                   mtxName = mtxName)
-  }
-  return(invisible(mtx))
 }

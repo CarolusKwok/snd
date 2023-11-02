@@ -31,6 +31,9 @@ formatWO_key2mtx_format_use.Fnumeric = function(format, colItem, colName, mtxNam
 
 #' @export
 formatWO_key2mtx_format_use.FPOSIXct = function(format, colItem, colName, mtxName, force = FALSE){
+  if(stringr::str_detect(string = unclass(format), pattern = "^#")){
+    colItem = as.POSIXct(colItem)
+  }
   colItem = snd::write_ISO8601(time = colItem)
   return(colItem)
 }

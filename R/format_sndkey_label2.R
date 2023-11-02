@@ -1,5 +1,5 @@
 #' @rdname formatRI_key2mtx
-#' @keywords Internal
+#' @keywords internal
 formatRI_key2mtx_sndkey_label = function(key, formater, formatee, formaterName, formateeName){
   UseMethod(generic = "formatRI_key2mtx_sndkey_label", object = formater)
 }
@@ -180,4 +180,88 @@ formatRI_key2mtx_sndkey_label.snd_item = function(key, formater, formatee, forma
   #Return if OK
   return(list(formater = formater,
               formatee = formatee))
+}
+
+#' @rdname formatWO_key2mtx
+#' @keywords internal
+formatWO_key2mtx_sndkey_label = function(key, formater, formatee, formaterName, formateeName){
+  UseMethod(generic = "formatWO_key2mtx_sndkey_label", object = formater)
+}
+
+#' @export
+formatWO_key2mtx_sndkey_label.snd_factor = function(key, formater, formatee, formaterName, formateeName){
+  use_factor = snd:::grab_mtxFactor(dataframe = formatee)
+  ava_label = lapply(X = use_factor,
+                     FUN = function(X, formater){
+                       label = dplyr::filter(.data = formater, `@factor` == X) %>%
+                         dplyr::select(`@label`) %>%
+                         unlist %>%
+                         unname %>%
+                         ifelse(is.na(.), "#NA", .)
+                       return(label)
+                     }, formater = formater)
+  use_label = lapply(X = use_factor,
+                     FUN = function(X, formatee){
+                       formatee %>%
+                         dplyr::select({{X}}) %>%
+                         unlist %>% unname %>%
+                         return
+                     }, formatee = formatee)
+  #the actual test ####
+  test = mapply(FUN =
+                  function(ava_label, use_label){
+                    if("###" %in% ava_label){return(0)} else {return(sum(!(use_label %in% ava_label)))}
+                  }, ava_label = ava_label, use_label = use_label, SIMPLIFY = TRUE, USE.NAMES = FALSE)
+  if(sum(test)){
+    failed = stringr::str_flatten(string = paste0("{.col ", use_label[as.logical(test)], "}"), collapse = ", ")
+    snd:::sys_abort(message = c("x" = "Column not described in {.col @label}",
+                                "!" = "Columns failed to describe by {.mtx {formaterName}} in {.mtx {formateeName}}",
+                                "i" = "Poorly descibed factors include:",
+                                "i" = failed),
+                    formaterName = formaterName, formateeName = formateeName)
+  }
+
+  #return everything ####
+  return(invisible(list(formater = dplyr::mutate(.data = formater,
+                                                 `@label` = ifelse(is.na(`@label`), "#NA", `@label`)),
+                        formatee = formatee)))
+}
+
+#' @export
+formatWO_key2mtx_sndkey_label.snd_item = function(key, formater, formatee, formaterName, formateeName){
+  use_item = snd:::grab_mtxItem(dataframe = formatee)
+  ava_label = lapply(X = use_item,
+                     FUN = function(X, formater){
+                       label = dplyr::filter(.data = formater, `@item` == X) %>%
+                         dplyr::select(`@label`) %>%
+                         unlist %>%
+                         unname %>%
+                         ifelse(is.na(.), "#NA", .)
+                       return(label)
+                     }, formater = formater)
+  use_label = lapply(X = use_item,
+                     FUN = function(X, formatee){
+                       formatee %>%
+                         dplyr::select({{X}}) %>%
+                         unlist %>% unname %>%
+                         return
+                     }, formatee = formatee)
+  #the actual test ####
+  test = mapply(FUN =
+                  function(ava_label, use_label){
+                    if("###" %in% ava_label){return(0)} else {return(sum(!(use_label %in% ava_label)))}
+                  }, ava_label = ava_label, use_label = use_label, SIMPLIFY = TRUE, USE.NAMES = FALSE)
+  if(sum(test)){
+    failed = stringr::str_flatten(string = paste0("{.col ", use_label[as.logical(test)], "}"), collapse = ", ")
+    snd:::sys_abort(message = c("x" = "Column not described in {.col @label}",
+                                "!" = "Columns failed to describe by {.mtx {formaterName}} in {.mtx {formateeName}}",
+                                "i" = "Poorly descibed factors include:",
+                                "i" = failed),
+                    formaterName = formaterName, formateeName = formateeName)
+  }
+
+  #return everything ####
+  return(invisible(list(formater = dplyr::mutate(.data = formater,
+                                                 `@label` = ifelse(is.na(`@label`), "#NA", `@label`)),
+                        formatee = formatee)))
 }

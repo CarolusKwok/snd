@@ -48,7 +48,7 @@ The timezone component contains the following format:
 \itemize{
 \item ±HH:mm
 \item ±HHmm
-\item Z (represents Zulu time or UTC time, +00:00)
+\item Z (represents Zulu or UTC time, +00:00)
 }
 
 For more information, please visit the wiki page over \href{https://en.wikipedia.org/wiki/ISO_8601}{here}.

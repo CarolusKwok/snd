@@ -1,16 +1,18 @@
 #' @rdname formatRI_key2mtx
-#' @keywords Internal
+#' @keywords internal
 formatRI_key2mtx_sndkey_format = function(key, formater, formatee, formaterName, formateeName){
   UseMethod(generic = "formatRI_key2mtx_sndkey_format", object = formater)
 }
 
 #' @export
 formatRI_key2mtx_sndkey_format.snd_factor = function(key, formater, formatee, formaterName, formateeName){
-  #1. Check consistent @format across @factor####
+  #0. Prep ####
   ava_factor = unique(formater$`@factor`)
   seperated_factor = lapply(X = ava_factor,
                             FUN = function(X, formater){formater = dplyr::filter(formater, `@factor` == X)},
                             formater = formater)
+
+  #1. Check consistent @format across @factor####
   test = sapply(X = seperated_factor,
                 FUN = function(X){return(length(unique(X$`@format`)) != 1)})
   if(sum(test)){
@@ -110,4 +112,86 @@ formatRI_key2mtx_sndkey_format.snd_item = function(key, formater, formatee, form
 
   return(list(formater = formater,
               formatee = formatee))
+}
+
+#' @rdname formatWO_key2mtx
+#' @keywords internal
+formatWO_key2mtx_sndkey_format = function(key, formater, formatee, formaterName, formateeName){
+  UseMethod(generic = "formatWO_key2mtx_sndkey_format", object = formater)
+}
+
+#' @export
+formatWO_key2mtx_sndkey_format.snd_factor = function(key, formater, formatee, formaterName, formateeName){
+  #0. prep ####
+  selected_formater = dplyr::select(.data = formater, `@factor`, `@format`) %>%
+    dplyr::distinct()
+  ava_factor = unique(selected_formater$`@factor`)
+  use_factor = snd:::grab_mtxFactor(formatee)
+
+  #1. Check if the format are consist among @factor####
+  test = dplyr::group_by(.data = selected_formater, `@factor`) %>%
+    dplyr::summarise(n = dplyr::n()) %>%
+    dplyr::filter(n > 1)
+  if(nrow(test)){
+    snd:::sys_abort(message = c("x" = "Inconsistent format in {.mtx {formaterName}}",
+                                "i" = "Inconsistent format for {.col @factor}",
+                                "i" =  snd:::sys_message_code(code = test$`@factor`)),
+                    formaterName = formaterName)
+  }
+
+  #2. Format ####
+  for(colName in use_factor){
+    format = unlist(dplyr::filter(selected_formater, `@factor` == colName)$`@format`)
+    format = snd:::classify(format,
+                            class = paste0("F", stringr::str_remove(string = format, pattern = "^#")))
+    colItem = unlist(dplyr::select(.data = formatee, {{colName}}), use.names = FALSE)
+    colItem = snd:::formatWO_key2mtx_format_use(format = format,
+                                                colItem = colItem,
+                                                colName = colName,
+                                                mtxName = formateeName,
+                                                force = FALSE)
+    formatee = dplyr::mutate(.data = formatee, "{colName}" := colItem)
+  }
+
+  #3. return the formated data back to formatee####
+  return(invisible(list(formater = formater,
+                        formatee = formatee)))
+}
+
+#' @export
+formatWO_key2mtx_sndkey_format.snd_item = function(key, formater, formatee, formaterName, formateeName){
+  #0. prep ####
+  selected_formater = dplyr::select(.data = formater, `@item`, `@format`) %>%
+    dplyr::distinct()
+  ava_item = unique(selected_formater$`@item`)
+  use_item = snd:::grab_mtxItem(formatee)
+
+  #1. Check if the format are consist among @item####
+  test = dplyr::group_by(.data = selected_formater, `@item`) %>%
+    dplyr::summarise(n = dplyr::n()) %>%
+    dplyr::filter(n > 1)
+  if(nrow(test)){
+    snd:::sys_abort(message = c("x" = "Inconsistent format in {.mtx {formaterName}}",
+                                "i" = "Inconsistent format for {.col @item}",
+                                "i" =  snd:::sys_message_code(code = test$`@item`)),
+                    formaterName = formaterName)
+  }
+
+  #2. Format ####
+  for(colName in use_item){
+    format = unlist(dplyr::filter(selected_formater, `@item` == colName)$`@format`)
+    format = snd:::classify(format,
+                            class = paste0("F", stringr::str_remove(string = format, pattern = "^#")))
+    colItem = unlist(dplyr::select(.data = formatee, {{colName}}), use.names = FALSE)
+    colItem = snd:::formatWO_key2mtx_format_use(format = format,
+                                                colItem = colItem,
+                                                colName = colName,
+                                                mtxName = formateeName,
+                                                force = FALSE)
+    formatee = dplyr::mutate(.data = formatee, "{colName}" := colItem)
+  }
+
+  #3. return the formated data back to formatee####
+  return(invisible(list(formater = formater,
+                        formatee = formatee)))
 }
