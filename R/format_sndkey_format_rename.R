@@ -32,7 +32,7 @@ format_sndkeyFormat_rename = function(col){
                   match = match_abbr + match_alias + match_full,
 
                   full = ifelse(match == 0, NA, sys_format$full[match]),
-                  fullname = ifelse(is.na(prefix), full, paste0(prefix, full)),
-                  fullname = ifelse(is.na(tail), fullname, paste0(fullname, "_", tail)))
+                  fullname = paste0(prefix, full),
+                  fullname = ifelse(tail == "", fullname, paste0(fullname, "_", tail)))
   return(analysis)
 }
